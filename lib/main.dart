@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flame/game.dart';
+import 'package:tower_war/Main%20Menu%20Screen/home_screen.dart';
 
 void main() {
-  final FlameGame game = FlameGame();
-  runApp(GameWidget(game: game));
+  runApp(const HomeScreen());
 }
