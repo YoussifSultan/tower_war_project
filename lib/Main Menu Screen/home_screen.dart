@@ -1,17 +1,10 @@
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
-import 'package:get/get_navigation/src/dialog/dialog_route.dart';
-import 'package:get/get_navigation/src/root/get_material_app.dart';
-import 'package:get/get_navigation/src/routes/get_route.dart';
-import 'package:get/get_navigation/src/routes/transitions_type.dart';
 import 'package:get/route_manager.dart';
 import 'package:rive/rive.dart';
 import 'package:tower_war/CommonUsed/Button_Tile.dart';
 import 'package:tower_war/CommonUsed/Constants.dart';
 import 'package:tower_war/CommonUsed/PageOptions.dart';
-import 'package:tower_war/GameScreen/game_options_dialog.dart';
-import 'package:tower_war/GameScreen/game_screen.dart';
-import 'package:tower_war/Settings_screen/settingsScreen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -61,9 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ButtonTile(
                     text: 'Play',
                     onTap: () {
-                      Get.dialog(
-                        GameOptionsDialog(),
-                      );
+                      Get.toNamed(PageNames.GameOptionsDialog);
                     },
                   ),
                   ButtonTile(

@@ -42,6 +42,7 @@ class _ButtonTileState extends State<ButtonTile> {
             child: Text(
               widget.text,
               style: TextStyle(
+                  fontFamily: 'PixelText',
                   fontSize: 20,
                   color: isClicking.value
                       ? Color.fromRGBO(37, 68, 65, 1)
