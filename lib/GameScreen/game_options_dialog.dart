@@ -3,6 +3,7 @@ import 'package:get/get.dart';
 import 'package:rive/rive.dart';
 import 'package:tower_war/CommonUsed/Button_Tile.dart';
 import 'package:tower_war/CommonUsed/Constants.dart';
+import 'package:tower_war/CommonUsed/PageOptions.dart';
 
 class GameOptionsDialog extends StatefulWidget {
   const GameOptionsDialog({super.key});
@@ -69,12 +70,16 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                 height: 10,
               ),
               /* *SECTION - Enter Player Names */
-              Text(
-                'Enter Player Name :',
-                style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w500,
-                    color: Colors.black),
+              Obx(
+                () => Visibility(
+                    visible: selectedNumberOfPlayers.value != 0,
+                    child: Text(
+                      'Enter Player Name :',
+                      style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.black),
+                    )),
               ),
               Obx(() => Center(
                     child: Container(
@@ -118,7 +123,23 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                     ),
                   )),
               /* *!SECTION */
+              SizedBox(
+                height: 50,
+              ),
               /* *SECTION - Start Game Button */
+              Obx(
+                () => Visibility(
+                  visible: selectedNumberOfPlayers.value != 0,
+                  child: Container(
+                      padding: EdgeInsets.only(left: 10, right: 30),
+                      child: ButtonTile(
+                          text: 'Start Game',
+                          onTap: () {
+                            Get.offAndToNamed(PageNames.GamePage);
+                          })),
+                ),
+              )
+              /* *!SECTION */
             ],
           ),
         ),
