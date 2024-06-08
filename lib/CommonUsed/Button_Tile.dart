@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
+import 'package:rive/rive.dart';
 
 class ButtonTile extends StatefulWidget {
   const ButtonTile({super.key, required this.text, required this.onTap});
@@ -50,6 +52,59 @@ class _ButtonTileState extends State<ButtonTile> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class IconTile extends StatefulWidget {
+  const IconTile(
+      {super.key, required this.onTap, required this.ForegroundIcon});
+  final IconData ForegroundIcon;
+  final Function onTap;
+  @override
+  State<IconTile> createState() => _IconTileState();
+}
+
+class _IconTileState extends State<IconTile> {
+  RxBool isClicking = false.obs;
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTapDown: (details) => isClicking(true),
+      onTapUp: (details) => isClicking(false),
+      onTap: () {
+        widget.onTap();
+      },
+      child: Obx(
+        () => Container(
+            width: 100,
+            margin: EdgeInsets.symmetric(horizontal: 5),
+            clipBehavior: Clip.hardEdge,
+            height: 50,
+            decoration: BoxDecoration(
+              boxShadow: isClicking.value
+                  ? []
+                  : [
+                      BoxShadow(
+                        blurRadius: 10,
+                        offset: Offset(7, 7),
+                      )
+                    ],
+              borderRadius: BorderRadius.circular(50),
+              color: isClicking.value
+                  ? Color.fromRGBO(173, 155, 170, 1)
+                  : Colors.white,
+            ),
+            child: Center(
+              child: Icon(
+                widget.ForegroundIcon,
+                size: 40,
+                color: isClicking.value
+                    ? Colors.white
+                    : Color.fromRGBO(173, 155, 170, 1),
+              ),
+            )),
       ),
     );
   }

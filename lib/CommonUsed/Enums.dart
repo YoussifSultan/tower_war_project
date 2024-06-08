@@ -1,8 +1,13 @@
 enum TileStatus {
   blankTile,
   deadTroopsTile,
-  redTroopsTile,
-  blueTroopsTile,
-  yellowTroopsTile,
-  greenTroopsTile,
+  TroopsTile,
+  TowerTile,
 }
+
+enum SelectedMode {
+  AddTroops,
+  ReduceTroops,
+}
+
+enum TeamColors { red, blue, yellow, green }
