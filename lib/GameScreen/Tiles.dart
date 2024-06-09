@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:rive/rive.dart';
 import 'package:tower_war/CommonUsed/Enums.dart';
 import 'package:tower_war/GameScreen/Board.dart';
-import 'package:undo/undo.dart';
 
 class CustomTile extends StatelessWidget {
   const CustomTile(
@@ -126,6 +126,26 @@ class TroopsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
+        /* *SECTION - Check if the cell belongs to a specified line */
+        List<Point> pointsOfLine =
+            GameVariables.currentTurn.value == TeamColors.red
+                ? GameVariables.redLinePositions
+                : GameVariables.currentTurn.value == TeamColors.blue
+                    ? GameVariables.blueLinePositions
+                    : GameVariables.currentTurn.value == TeamColors.yellow
+                        ? GameVariables.yellowLinePosition
+                        : GameVariables.currentTurn.value == TeamColors.green
+                            ? GameVariables.greenLinePosition
+                            : GameVariables.redLinePositions;
+        if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
+          Get.rawSnackbar(
+              messageText: Text(
+            'Put The Warrior near the line',
+            style: TextStyle(color: Colors.white),
+          ));
+          return;
+        }
+        /* *!SECTION */
         String cellData = GameVariables
             .grid[cellPosition.rowIndex][cellPosition.colIndex].string;
         cellData = cellData.replaceAll(new RegExp(r"[0-9]+"), "");
@@ -141,6 +161,7 @@ class TroopsTile extends StatelessWidget {
           }
         }
         Board.addCurrentGridToHistory();
+        Board.updateTeamsLine();
       },
       child: Container(
           alignment: Alignment.center,
@@ -189,6 +210,27 @@ class DeadTroopsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
+          /* *SECTION - Check if the cell belongs to a specified line */
+          List<Point> pointsOfLine =
+              GameVariables.currentTurn.value == TeamColors.red
+                  ? GameVariables.redLinePositions
+                  : GameVariables.currentTurn.value == TeamColors.blue
+                      ? GameVariables.blueLinePositions
+                      : GameVariables.currentTurn.value == TeamColors.yellow
+                          ? GameVariables.yellowLinePosition
+                          : GameVariables.currentTurn.value == TeamColors.green
+                              ? GameVariables.greenLinePosition
+                              : GameVariables.redLinePositions;
+          if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
+            Get.rawSnackbar(
+                messageText: Text(
+              'Put The Warrior near the line',
+              style: TextStyle(color: Colors.white),
+            ));
+            return;
+          }
+
+          /* *!SECTION */
           String cellData = GameVariables
               .grid[cellPosition.rowIndex][cellPosition.colIndex].string;
           String celltype = cellData.replaceAll(new RegExp(r"[0-9]+"), "");
@@ -199,6 +241,7 @@ class DeadTroopsTile extends StatelessWidget {
                 [cellPosition.colIndex]("_");
           }
           Board.addCurrentGridToHistory();
+          Board.updateTeamsLine();
         },
         child: Container(
             alignment: Alignment.center,
@@ -239,6 +282,27 @@ class BlankTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
+          /* *SECTION - Check if the cell belongs to a specified line */
+          List<Point> pointsOfLine =
+              GameVariables.currentTurn.value == TeamColors.red
+                  ? GameVariables.redLinePositions
+                  : GameVariables.currentTurn.value == TeamColors.blue
+                      ? GameVariables.blueLinePositions
+                      : GameVariables.currentTurn.value == TeamColors.yellow
+                          ? GameVariables.yellowLinePosition
+                          : GameVariables.currentTurn.value == TeamColors.green
+                              ? GameVariables.greenLinePosition
+                              : GameVariables.redLinePositions;
+          if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
+            Get.rawSnackbar(
+                messageText: Text(
+              'Put The Warrior near the line',
+              style: TextStyle(color: Colors.white),
+            ));
+            return;
+          }
+
+          /* *!SECTION */
           String currentTurnColorCode =
               GameVariables.currentTurn.value == TeamColors.red
                   ? 'R'
@@ -252,7 +316,9 @@ class BlankTile extends StatelessWidget {
 
           GameVariables.grid[cellPosition.rowIndex]
               [cellPosition.colIndex]('W${currentTurnColorCode}1');
+
           Board.addCurrentGridToHistory();
+          Board.updateTeamsLine();
         },
         child: Container(
           alignment: Alignment.center,

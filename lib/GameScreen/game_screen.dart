@@ -2,10 +2,7 @@ import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:get/get.dart';
-import 'package:get/get_rx/get_rx.dart';
-import 'package:rive/rive.dart';
 import 'package:tower_war/CommonUsed/Button_Tile.dart';
 import 'package:tower_war/CommonUsed/Constants.dart';
 import 'package:tower_war/CommonUsed/DataCellTile.dart';
@@ -28,8 +25,6 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void initState() {
-    GameVariables.currentTurn(TeamColors.values[Random().nextInt(3)]);
-    fortuneWheelController.add(GameVariables.currentTurn.value.index);
     /* *SECTION - fortune wheel */
     ShowFortuneWheelToChooseWhichPlayerBeginsFirst();
     /* *!SECTION */
@@ -39,6 +34,7 @@ class _GameScreenState extends State<GameScreen> {
         if (isUndoFunctionActivated) {
           Board.convertListStringToListRxString(val);
           isUndoFunctionActivated = false;
+          Board.updateTeamsLine();
         }
       },
     );
@@ -148,25 +144,6 @@ class _GameScreenState extends State<GameScreen> {
               },
               ForegroundIcon: Icons.done_all_outlined),
           /* *!SECTION */
-          /* *SECTION - more Data Button */
-          IconTile(
-              onTap: () {
-                Get.bottomSheet(
-                  backgroundColor: Colors.white,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.only(
-                          topRight: Radius.circular(20),
-                          topLeft: Radius.circular(20))),
-                  ListView(
-                    children: [
-                      dataCardTile(
-                          hintingText: 'hintingText', DataText: 'DataText'.obs)
-                    ],
-                  ),
-                );
-              },
-              ForegroundIcon: Icons.more_horiz_outlined),
-          /* *!SECTION */
         ],
       ),
 
@@ -179,6 +156,10 @@ class _GameScreenState extends State<GameScreen> {
     Future.delayed(
       Durations.long4,
       () {
+        GameVariables.currentTurn(TeamColors.values[Random().nextInt(3)]);
+
+        fortuneWheelController.add(GameVariables.currentTurn.value.index);
+
         Get.dialog(Container(
           width: Constants.screenWidth * 0.7,
           height: Constants.screenHeight * 0.5,
@@ -190,6 +171,7 @@ class _GameScreenState extends State<GameScreen> {
             onAnimationEnd: () {
               Future.delayed(Durations.long4, () {
                 Get.back();
+                setState(() {});
               });
             },
             items: [

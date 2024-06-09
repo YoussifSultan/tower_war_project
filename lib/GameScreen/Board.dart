@@ -57,6 +57,31 @@ class Board {
     return neighbors;
   }
 
+  List<Point> getNeighboringCellsPosition(Point point) {
+    List<Point> neighbors = [];
+    List<List<int>> directions = [
+      [-1, -1], // top left
+      [-1, 0], // top
+      [-1, 1], //top right
+      [0, 1], //right
+      [1, 1], //bottom right
+      [1, 0], //bottom
+      [1, -1], //bottom left
+      [0, -1], //left
+    ];
+
+    for (var direction in directions) {
+      Point newPoint = Point(
+          rowIndex: point.rowIndex + direction[0],
+          colIndex: point.colIndex + direction[1]);
+      if (isValid(newPoint)) {
+        neighbors.add(newPoint);
+      }
+    }
+
+    return neighbors;
+  }
+
   List<Point> checkConnections(
       {required Point towerPosition, required String CellType}) {
     // Take the tower position as a starting point for the loop
@@ -149,6 +174,43 @@ class Board {
     }
   }
 
+  static void updateTeamsLine() {
+    /* *SECTION - specifing the lines */
+    List<List<Point>> redblueyellowgreenLinePositions = [];
+    /* *!SECTION */
+    for (var teamcolor in TeamColors.values) {
+      String currentTurnColorCode = teamcolor == TeamColors.red
+          ? 'R'
+          : teamcolor == TeamColors.blue
+              ? 'B'
+              : teamcolor == TeamColors.yellow
+                  ? 'Y'
+                  : teamcolor == TeamColors.green
+                      ? "G"
+                      : "ufjf";
+      Point currentTurnTowerPosition = teamcolor == TeamColors.red
+          ? Point(rowIndex: 0, colIndex: 0)
+          : teamcolor == TeamColors.blue
+              ? Point(rowIndex: 0, colIndex: 8)
+              : teamcolor == TeamColors.yellow
+                  ? Point(rowIndex: 12, colIndex: 8)
+                  : teamcolor == TeamColors.green
+                      ? Point(rowIndex: 12, colIndex: 0)
+                      : Point(rowIndex: 0, colIndex: 0);
+      Board board = Board();
+      List<Point> Line = board.checkConnections(
+          towerPosition: currentTurnTowerPosition,
+          CellType: currentTurnColorCode);
+      redblueyellowgreenLinePositions.add(Line);
+    }
+    /* *SECTION - Assigning the lines positions*/
+    GameVariables.redLinePositions = redblueyellowgreenLinePositions[0];
+    GameVariables.blueLinePositions = redblueyellowgreenLinePositions[1];
+    GameVariables.yellowLinePosition = redblueyellowgreenLinePositions[2];
+    GameVariables.greenLinePosition = redblueyellowgreenLinePositions[3];
+    /* *!SECTION */
+  }
+
   static Future<void> checkBoard() async {
     for (var teamcolor in TeamColors.values) {
       String currentTurnColorCode = teamcolor == TeamColors.red
@@ -183,6 +245,22 @@ class Board {
         Board.convertListRxStringToListString(GameVariables.grid);
     GameVariables.historyController.modify(currentStringGrid);
   }
+
+  static bool isThisPointNearTheLine(Point point, List<Point> pointsOfLine) {
+    List<Point> validPoints = [];
+    Board board = Board();
+    for (var point in pointsOfLine) {
+      validPoints.addAll(board.getNeighboringCellsPosition(point));
+    }
+    if (validPoints
+        .where(
+            (p) => p.rowIndex == point.rowIndex && p.colIndex == point.colIndex)
+        .isNotEmpty) {
+      return true;
+    } else {
+      return false;
+    }
+  }
 }
 
 class GameVariables {
@@ -191,6 +269,10 @@ class GameVariables {
   static String bluePlayerName = 'Osama';
   static String yellowPlayerName = 'Mohammed';
   static String greenPlayerName = 'Khalil';
+  static List<Point> redLinePositions = [Point(rowIndex: 0, colIndex: 0)];
+  static List<Point> blueLinePositions = [Point(rowIndex: 0, colIndex: 7)];
+  static List<Point> yellowLinePosition = [Point(rowIndex: 12, colIndex: 7)];
+  static List<Point> greenLinePosition = [Point(rowIndex: 12, colIndex: 0)];
   static late SimpleStack<List<List<String>>> historyController;
 
   static List<List<RxString>> grid = [
