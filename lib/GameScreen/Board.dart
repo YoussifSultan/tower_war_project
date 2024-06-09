@@ -1,5 +1,6 @@
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
 import 'package:tower_war/CommonUsed/Enums.dart';
+import 'package:undo/undo.dart';
 
 class Point {
   int rowIndex, colIndex;
@@ -121,13 +122,6 @@ class Board {
         }
       }
     }
-    // for (var point in line) {
-    //     int numberOfTroopsInCell =
-    //           int.parse(cell.replaceAll(new RegExp(r'[^0-9]'), ''));
-    //   GameVariables.grid[point.rowIndex][point.colIndex](cellType);
-    // }
-
-    // GameVariables.grid[line[0].rowIndex][line[0].colIndex]("T$cellType$");
   }
 
   static List<List<String>> convertListRxStringToListString(
@@ -142,6 +136,53 @@ class Board {
     }
     return gridString;
   }
+
+  static void convertListStringToListRxString(List<List<String>> grid) {
+    for (var rowIndex = 0;
+        rowIndex < GameVariables.grid.length /* num of rows */;
+        rowIndex++) {
+      for (var colIndex = 0;
+          colIndex < GameVariables.grid[0].length /* num of columns */;
+          colIndex++) {
+        GameVariables.grid[rowIndex][colIndex](grid[rowIndex][colIndex]);
+      }
+    }
+  }
+
+  static Future<void> checkBoard() async {
+    for (var teamcolor in TeamColors.values) {
+      String currentTurnColorCode = teamcolor == TeamColors.red
+          ? 'R'
+          : teamcolor == TeamColors.blue
+              ? 'B'
+              : teamcolor == TeamColors.yellow
+                  ? 'Y'
+                  : teamcolor == TeamColors.green
+                      ? "G"
+                      : "ufjf";
+      Point currentTurnTowerPosition = teamcolor == TeamColors.red
+          ? Point(rowIndex: 0, colIndex: 0)
+          : teamcolor == TeamColors.blue
+              ? Point(rowIndex: 0, colIndex: 8)
+              : teamcolor == TeamColors.yellow
+                  ? Point(rowIndex: 12, colIndex: 8)
+                  : teamcolor == TeamColors.green
+                      ? Point(rowIndex: 12, colIndex: 0)
+                      : Point(rowIndex: 0, colIndex: 0);
+      Board board = Board();
+      List<Point> Line = board.checkConnections(
+          towerPosition: currentTurnTowerPosition,
+          CellType: currentTurnColorCode);
+      board.eraseAllCellTypeOutsideTheLineOfPoints(Line, currentTurnColorCode);
+      Board.addCurrentGridToHistory();
+    }
+  }
+
+  static void addCurrentGridToHistory() {
+    List<List<String>> currentStringGrid =
+        Board.convertListRxStringToListString(GameVariables.grid);
+    GameVariables.historyController.modify(currentStringGrid);
+  }
 }
 
 class GameVariables {
@@ -150,7 +191,7 @@ class GameVariables {
   static String bluePlayerName = 'Osama';
   static String yellowPlayerName = 'Mohammed';
   static String greenPlayerName = 'Khalil';
-  static   late SimpleStack _controller;
+  static late SimpleStack<List<List<String>>> historyController;
 
   static List<List<RxString>> grid = [
     [

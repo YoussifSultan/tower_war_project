@@ -4,6 +4,7 @@ import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:rive/rive.dart';
 import 'package:tower_war/CommonUsed/Enums.dart';
 import 'package:tower_war/GameScreen/Board.dart';
+import 'package:undo/undo.dart';
 
 class CustomTile extends StatelessWidget {
   const CustomTile(
@@ -74,35 +75,40 @@ class TowerTile extends StatelessWidget {
   final RxInt numOfTroopsInTower;
   @override
   Widget build(BuildContext context) {
-    return Container(
-        clipBehavior: Clip.hardEdge,
-        alignment: Alignment.center,
-        margin: EdgeInsets.all(1),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(5),
-          color: Colors.white,
-        ),
-        child: Stack(
-          children: [
-            RiveAnimation.asset(
-                'assets/animations/towers/${teamColor.name}tower.riv'),
-            Align(
-              alignment: Alignment.bottomRight,
-              child: Container(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(10),
+    return GestureDetector(
+      onTap: () {
+        Board.addCurrentGridToHistory();
+      },
+      child: Container(
+          clipBehavior: Clip.hardEdge,
+          alignment: Alignment.center,
+          margin: EdgeInsets.all(1),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(5),
+            color: Colors.white,
+          ),
+          child: Stack(
+            children: [
+              RiveAnimation.asset(
+                  'assets/animations/towers/${teamColor.name}tower.riv'),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                    ),
+                    color: Colors.black.withOpacity(0.5),
                   ),
-                  color: Colors.black.withOpacity(0.5),
+                  child: Text(
+                    numOfTroopsInTower.string,
+                    style: TextStyle(color: Colors.white),
+                  ),
                 ),
-                child: Text(
-                  numOfTroopsInTower.string,
-                  style: TextStyle(color: Colors.white),
-                ),
-              ),
-            )
-          ],
-        ));
+              )
+            ],
+          )),
+    );
   }
 }
 
@@ -134,6 +140,7 @@ class TroopsTile extends StatelessWidget {
                 [cellPosition.colIndex]("_");
           }
         }
+        Board.addCurrentGridToHistory();
       },
       child: Container(
           alignment: Alignment.center,
@@ -191,6 +198,7 @@ class DeadTroopsTile extends StatelessWidget {
             GameVariables.grid[cellPosition.rowIndex]
                 [cellPosition.colIndex]("_");
           }
+          Board.addCurrentGridToHistory();
         },
         child: Container(
             alignment: Alignment.center,
@@ -244,6 +252,7 @@ class BlankTile extends StatelessWidget {
 
           GameVariables.grid[cellPosition.rowIndex]
               [cellPosition.colIndex]('W${currentTurnColorCode}1');
+          Board.addCurrentGridToHistory();
         },
         child: Container(
           alignment: Alignment.center,
