@@ -123,8 +123,17 @@ class TroopsTile extends StatelessWidget {
         String cellData = GameVariables
             .grid[cellPosition.rowIndex][cellPosition.colIndex].string;
         cellData = cellData.replaceAll(new RegExp(r"[0-9]+"), "");
-        GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
-            cellData + '${(numberOfTroops!.value + 1)}');
+        if (teamColor == GameVariables.currentTurn.value) {
+          GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
+              cellData + '${(numberOfTroops!.value + 1)}');
+        } else {
+          GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
+              cellData + '${(numberOfTroops!.value - 1)}');
+          if (numberOfTroops!.value == 1) {
+            GameVariables.grid[cellPosition.rowIndex]
+                [cellPosition.colIndex]("_");
+          }
+        }
       },
       child: Container(
           alignment: Alignment.center,
@@ -138,20 +147,22 @@ class TroopsTile extends StatelessWidget {
             children: [
               RiveAnimation.asset(
                   'assets/animations/warriors/${teamColor.name}warrior.riv'),
-              Align(
-                alignment: Alignment.bottomRight,
-                child: Container(
-                  decoration: BoxDecoration(
-                      color: Colors.black.withOpacity(0.5),
-                      borderRadius: BorderRadius.only(
-                        topLeft: Radius.circular(10),
-                      )),
-                  child: Text(
-                    numberOfTroops!.string,
-                    style: TextStyle(color: Colors.white),
-                  ),
-                ),
-              )
+              numberOfTroops!.value == 1
+                  ? SizedBox()
+                  : Align(
+                      alignment: Alignment.bottomRight,
+                      child: Container(
+                        decoration: BoxDecoration(
+                            color: Colors.black.withOpacity(0.5),
+                            borderRadius: BorderRadius.only(
+                              topLeft: Radius.circular(10),
+                            )),
+                        child: Text(
+                          numberOfTroops!.string,
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    )
             ],
           )),
     );
@@ -169,31 +180,43 @@ class DeadTroopsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-        alignment: Alignment.center,
-        clipBehavior: Clip.hardEdge,
-        margin: EdgeInsets.all(1),
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(5),
-          color: Colors.white,
-        ),
-        child: Stack(children: [
-          RiveAnimation.asset('assets/animations/warriors/deadwarrior.riv'),
-          Align(
-            alignment: Alignment.bottomRight,
-            child: Container(
-              decoration: BoxDecoration(
-                  color: Colors.black.withOpacity(0.5),
-                  borderRadius: BorderRadius.only(
-                    topLeft: Radius.circular(10),
-                  )),
-              child: Text(
-                numberOfTroops!.string,
-                style: TextStyle(color: Colors.white),
-              ),
+    return GestureDetector(
+        onTap: () {
+          String cellData = GameVariables
+              .grid[cellPosition.rowIndex][cellPosition.colIndex].string;
+          String celltype = cellData.replaceAll(new RegExp(r"[0-9]+"), "");
+          GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
+              celltype + '${(numberOfTroops!.value - 1)}');
+          if (numberOfTroops!.value == 1) {
+            GameVariables.grid[cellPosition.rowIndex]
+                [cellPosition.colIndex]("_");
+          }
+        },
+        child: Container(
+            alignment: Alignment.center,
+            clipBehavior: Clip.hardEdge,
+            margin: EdgeInsets.all(1),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(5),
+              color: Colors.white,
             ),
-          )
-        ]));
+            child: Stack(children: [
+              RiveAnimation.asset('assets/animations/warriors/deadwarrior.riv'),
+              Align(
+                alignment: Alignment.bottomRight,
+                child: Container(
+                  decoration: BoxDecoration(
+                      color: Colors.black.withOpacity(0.5),
+                      borderRadius: BorderRadius.only(
+                        topLeft: Radius.circular(10),
+                      )),
+                  child: Text(
+                    numberOfTroops!.string,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              )
+            ])));
   }
 }
 
@@ -208,14 +231,19 @@ class BlankTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
-          // if (numberOfTroops != null) {
-          //   if (selectedMode == SelectedMode.AddTroops) {
-          //     numberOfTroops!(numberOfTroops!.value + 1);
-          //   } else if (selectedMode == SelectedMode.ReduceTroops &&
-          //       numberOfTroops! > 0) {
-          //     numberOfTroops!(numberOfTroops!.value - 1);
-          //   }
-          // }
+          String currentTurnColorCode =
+              GameVariables.currentTurn.value == TeamColors.red
+                  ? 'R'
+                  : GameVariables.currentTurn.value == TeamColors.blue
+                      ? 'B'
+                      : GameVariables.currentTurn.value == TeamColors.yellow
+                          ? 'Y'
+                          : GameVariables.currentTurn.value == TeamColors.green
+                              ? "G"
+                              : "ufjf";
+
+          GameVariables.grid[cellPosition.rowIndex]
+              [cellPosition.colIndex]('W${currentTurnColorCode}1');
         },
         child: Container(
           alignment: Alignment.center,

@@ -1,13 +1,16 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:get/get_rx/get_rx.dart';
 import 'package:rive/rive.dart';
 import 'package:tower_war/CommonUsed/Button_Tile.dart';
 import 'package:tower_war/CommonUsed/Constants.dart';
 import 'package:tower_war/CommonUsed/Enums.dart';
 import 'package:tower_war/GameScreen/Board.dart';
 import 'package:tower_war/GameScreen/Tiles.dart';
+import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -17,18 +20,79 @@ class GameScreen extends StatefulWidget {
 }
 
 class _GameScreenState extends State<GameScreen> {
+  StreamController<int> fortuneWheelController = StreamController<int>();
+  RxBool isAddTroopsButtonClicked = false.obs;
+  RxBool isUndoButtonClicked = false.obs;
+
   @override
   void initState() {
     GameVariables.currentTurn(TeamColors.values[Random().nextInt(3)]);
+    fortuneWheelController.add(GameVariables.currentTurn.value.index);
+    /* *SECTION - fortune wheel */
+    Future.delayed(
+      Durations.long4,
+      () {
+        Get.dialog(Container(
+          width: Constants.screenWidth * 0.7,
+          height: Constants.screenHeight * 0.5,
+          decoration: BoxDecoration(
+              color: Colors.white, borderRadius: BorderRadius.circular(20)),
+          child: FortuneWheel(
+            curve: Curves.easeInOut,
+            selected: fortuneWheelController.stream,
+            onAnimationEnd: () {
+              Future.delayed(Durations.long4, () {
+                Get.back();
+              });
+            },
+            items: [
+              FortuneItem(
+                  style: FortuneItemStyle(
+                    color: Color.fromRGBO(
+                        240, 73, 79, 1), // <-- custom circle slice fill color
+                  ),
+                  child: Text(GameVariables.redPlayerName)),
+              FortuneItem(
+                  style: FortuneItemStyle(
+                    color: Color.fromRGBO(
+                        76, 179, 212, 1), // <-- custom circle slice fill color
+                  ),
+                  child: Text(GameVariables.bluePlayerName)),
+              FortuneItem(
+                  style: FortuneItemStyle(
+                    color: Color.fromRGBO(
+                        211, 183, 120, 1), // <-- custom circle slice fill color
+                  ),
+                  child: Text(GameVariables.yellowPlayerName)),
+              FortuneItem(
+                  style: FortuneItemStyle(
+                    color: Color.fromRGBO(
+                        37, 68, 65, 1), // <-- custom circle slice fill color
+                  ),
+                  child: Text(GameVariables.greenPlayerName)),
+            ],
+          ),
+        ));
+      },
+    );
+    /* *!SECTION */
     super.initState();
   }
 
   @override
   Widget build(BuildContext context) {
     int rowCount = -1;
-
+    Color currentTurnColor = GameVariables.currentTurn.value == TeamColors.red
+        ? Color.fromRGBO(240, 73, 79, 1)
+        : GameVariables.currentTurn.value == TeamColors.blue
+            ? Color.fromRGBO(76, 179, 212, 1)
+            : GameVariables.currentTurn.value == TeamColors.yellow
+                ? Color.fromRGBO(211, 183, 120, 1)
+                : GameVariables.currentTurn.value == TeamColors.green
+                    ? Color.fromRGBO(37, 68, 65, 1)
+                    : Color.fromRGBO(37, 68, 65, 1);
     return Scaffold(
-      backgroundColor: Color.fromRGBO(76, 179, 212, 1),
+      backgroundColor: currentTurnColor,
       body: ListView(
         shrinkWrap: true,
         children: [
@@ -67,18 +131,20 @@ class _GameScreenState extends State<GameScreen> {
                     crossAxisCount: 4),
                 children: [
                   GestureDetector(
-                    onTap: () {
-                      GameVariables.selectedMode(SelectedMode.AddTroops);
+                    onTapUp: (details) {
+                      isAddTroopsButtonClicked(false);
                     },
-                    child: Obx(
-                      () => Container(
+                    onTapDown: (details) {
+                      isAddTroopsButtonClicked(true);
+                    },
+                    child: Obx(() {
+                      return Container(
                         width: 100,
                         margin: EdgeInsets.symmetric(horizontal: 5),
                         clipBehavior: Clip.hardEdge,
                         height: 50,
                         decoration: BoxDecoration(
-                          boxShadow: GameVariables.selectedMode.value ==
-                                  SelectedMode.AddTroops
+                          boxShadow: isAddTroopsButtonClicked.value
                               ? []
                               : [
                                   BoxShadow(
@@ -87,14 +153,13 @@ class _GameScreenState extends State<GameScreen> {
                                   )
                                 ],
                           borderRadius: BorderRadius.circular(50),
-                          color: GameVariables.selectedMode.value ==
-                                  SelectedMode.AddTroops
+                          color: isAddTroopsButtonClicked.value
                               ? Color.fromRGBO(2, 209, 33, 1)
                               : Colors.white,
                         ),
                         child: Stack(children: [
                           RiveAnimation.asset(
-                              'assets/animations/warriors/greenwarrior.riv'),
+                              'assets/animations/warriors/${GameVariables.currentTurn.value.name}warrior.riv'),
                           Align(
                             alignment: Alignment.center,
                             child: Container(
@@ -104,30 +169,31 @@ class _GameScreenState extends State<GameScreen> {
                               child: Icon(
                                 Icons.add,
                                 size: 30,
-                                color: GameVariables.selectedMode.value ==
-                                        SelectedMode.AddTroops
+                                color: isAddTroopsButtonClicked.value
                                     ? Colors.white
                                     : Color.fromRGBO(2, 209, 33, 1),
                               ),
                             ),
                           )
                         ]),
-                      ),
-                    ),
+                      );
+                    }),
                   ),
                   GestureDetector(
-                    onTap: () {
-                      GameVariables.selectedMode(SelectedMode.ReduceTroops);
+                    onTapUp: (details) {
+                      isUndoButtonClicked(false);
                     },
-                    child: Obx(
-                      () => Container(
+                    onTapDown: (details) {
+                      isUndoButtonClicked(true);
+                    },
+                    child: Obx(() {
+                      return Container(
                         width: 100,
                         margin: EdgeInsets.symmetric(horizontal: 5),
                         clipBehavior: Clip.hardEdge,
                         height: 50,
                         decoration: BoxDecoration(
-                          boxShadow: GameVariables.selectedMode.value ==
-                                  SelectedMode.ReduceTroops
+                          boxShadow: isUndoButtonClicked.value
                               ? []
                               : [
                                   BoxShadow(
@@ -136,14 +202,13 @@ class _GameScreenState extends State<GameScreen> {
                                   )
                                 ],
                           borderRadius: BorderRadius.circular(50),
-                          color: GameVariables.selectedMode.value ==
-                                  SelectedMode.ReduceTroops
-                              ? Color.fromRGBO(215, 5, 5, 1)
+                          color: isUndoButtonClicked.value
+                              ? Colors.lightBlue
                               : Colors.white,
                         ),
                         child: Stack(children: [
                           RiveAnimation.asset(
-                              'assets/animations/warriors/redwarrior.riv'),
+                              'assets/animations/warriors/${GameVariables.currentTurn.value.name}warrior.riv'),
                           Align(
                             alignment: Alignment.center,
                             child: Container(
@@ -151,21 +216,37 @@ class _GameScreenState extends State<GameScreen> {
                                   borderRadius: BorderRadius.circular(50),
                                   color: Colors.black.withOpacity(0.5)),
                               child: Icon(
-                                Icons.remove,
+                                Icons.undo,
                                 size: 30,
-                                color: GameVariables.selectedMode.value ==
-                                        SelectedMode.ReduceTroops
+                                color: isUndoButtonClicked.value
                                     ? Colors.white
-                                    : Color.fromRGBO(215, 5, 5, 1),
+                                    : Colors.lightBlue,
                               ),
                             ),
                           )
                         ]),
-                      ),
-                    ),
+                      );
+                    }),
                   ),
                   IconTile(
-                      onTap: () {}, ForegroundIcon: Icons.done_all_outlined),
+                      onTap: () {
+                        checkBoard();
+                        switch (GameVariables.currentTurn.value) {
+                          case TeamColors.red:
+                            GameVariables.currentTurn(TeamColors.blue);
+                          case TeamColors.blue:
+                            GameVariables.currentTurn(TeamColors.yellow);
+                          case TeamColors.yellow:
+                            GameVariables.currentTurn(TeamColors.green);
+                          case TeamColors.green:
+                            GameVariables.currentTurn(TeamColors.red);
+                            break;
+
+                          default:
+                        }
+                        setState(() {});
+                      },
+                      ForegroundIcon: Icons.done_all_outlined),
                   IconTile(
                       onTap: () {
                         Get.bottomSheet(
@@ -189,6 +270,34 @@ class _GameScreenState extends State<GameScreen> {
         ],
       ),
     );
+  }
+
+  void checkBoard() {
+    for (var teamcolor in TeamColors.values) {
+      String currentTurnColorCode = teamcolor == TeamColors.red
+          ? 'R'
+          : teamcolor == TeamColors.blue
+              ? 'B'
+              : teamcolor == TeamColors.yellow
+                  ? 'Y'
+                  : teamcolor == TeamColors.green
+                      ? "G"
+                      : "ufjf";
+      Point currentTurnTowerPosition = teamcolor == TeamColors.red
+          ? Point(rowIndex: 0, colIndex: 0)
+          : teamcolor == TeamColors.blue
+              ? Point(rowIndex: 0, colIndex: 8)
+              : teamcolor == TeamColors.yellow
+                  ? Point(rowIndex: 12, colIndex: 8)
+                  : teamcolor == TeamColors.green
+                      ? Point(rowIndex: 12, colIndex: 0)
+                      : Point(rowIndex: 0, colIndex: 0);
+      Board board = Board();
+      List<Point> Line = board.checkConnections(
+          towerPosition: currentTurnTowerPosition,
+          CellType: currentTurnColorCode);
+      board.eraseAllCellTypeOutsideTheLineOfPoints(Line, currentTurnColorCode);
+    }
   }
 }
 

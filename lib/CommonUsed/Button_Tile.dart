@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/widgets.dart';
 import 'package:get/get.dart';
-import 'package:rive/rive.dart';
 
 class ButtonTile extends StatefulWidget {
   const ButtonTile({super.key, required this.text, required this.onTap});

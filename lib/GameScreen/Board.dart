@@ -13,11 +13,10 @@ class Point {
 }
 
 class Board {
-  List<List<String>> board;
   late int numOfRows, numOfColumns;
-  Board(this.board) {
-    numOfRows = board.length;
-    numOfColumns = board[0].length;
+  Board() {
+    numOfRows = GameVariables.grid.length;
+    numOfColumns = GameVariables.grid[0].length;
   }
 
   bool isValid(Point p) {
@@ -47,7 +46,8 @@ class Board {
           rowIndex: point.rowIndex + direction[0],
           colIndex: point.colIndex + direction[1]);
       if (isValid(newPoint)) {
-        if (board[newPoint.rowIndex][newPoint.colIndex] == cellType) {
+        if (GameVariables.grid[newPoint.rowIndex][newPoint.colIndex]
+            .contains(cellType)) {
           neighbors.add(newPoint);
         }
       }
@@ -105,24 +105,52 @@ class Board {
   void eraseAllCellTypeOutsideTheLineOfPoints(
       List<Point> line, String cellType) {
     for (var indexOfRow = 0; indexOfRow < numOfRows; indexOfRow++) {
-      List<String> row = board[indexOfRow];
+      List<RxString> row = GameVariables.grid[indexOfRow];
       for (var indexOfCol = 0; indexOfCol < numOfColumns; indexOfCol++) {
-        String cell = row[indexOfCol];
-        if (cell == cellType) {
-          board[indexOfRow][indexOfCol] = '.';
+        String cell = row[indexOfCol].string;
+        if (cell.contains('W') && cell.contains(cellType)) {
+          if (line
+              .where((point) =>
+                  point.rowIndex == indexOfRow && point.colIndex == indexOfCol)
+              .isEmpty) {
+            int numberOfTroopsInCell =
+                int.parse(cell.replaceAll(new RegExp(r'[^0-9]'), ''));
+            GameVariables.grid[indexOfRow]
+                [indexOfCol]('.$numberOfTroopsInCell');
+          }
         }
       }
     }
-    for (var point in line) {
-      board[point.rowIndex][point.colIndex] = cellType;
+    // for (var point in line) {
+    //     int numberOfTroopsInCell =
+    //           int.parse(cell.replaceAll(new RegExp(r'[^0-9]'), ''));
+    //   GameVariables.grid[point.rowIndex][point.colIndex](cellType);
+    // }
+
+    // GameVariables.grid[line[0].rowIndex][line[0].colIndex]("T$cellType$");
+  }
+
+  static List<List<String>> convertListRxStringToListString(
+      List<List<RxString>> grid) {
+    List<List<String>> gridString = [];
+    for (var row in grid) {
+      List<String> rowString = [];
+      for (var cell in row) {
+        rowString.add(cell.value);
+      }
+      gridString.add(rowString);
     }
-    board[line[0].rowIndex][line[0].colIndex] = "T$cellType";
+    return gridString;
   }
 }
 
 class GameVariables {
   static Rx<TeamColors> currentTurn = TeamColors.red.obs;
-  static Rx<SelectedMode> selectedMode = SelectedMode.AddTroops.obs;
+  static String redPlayerName = 'Youssif';
+  static String bluePlayerName = 'Osama';
+  static String yellowPlayerName = 'Mohammed';
+  static String greenPlayerName = 'Khalil';
+  static   late SimpleStack _controller;
 
   static List<List<RxString>> grid = [
     [
@@ -137,39 +165,12 @@ class GameVariables {
     ],
     ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
     ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
-    [
-      '_'.obs,
-      '_'.obs,
-      'WG100'.obs,
-      '_'.obs,
-      '_'.obs,
-      '_'.obs,
-      '_'.obs,
-      '_'.obs
-    ],
-    [
-      '_'.obs,
-      '_'.obs,
-      'WY2'.obs,
-      '_'.obs,
-      'WR88'.obs,
-      '_'.obs,
-      'WB15'.obs,
-      '_'.obs
-    ],
     ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
     ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
     ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
-    [
-      '_'.obs,
-      '_'.obs,
-      '.1000'.obs,
-      '_'.obs,
-      '_'.obs,
-      '_'.obs,
-      '_'.obs,
-      '_'.obs
-    ],
+    ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
+    ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
+    ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
     ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
     ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
     ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
