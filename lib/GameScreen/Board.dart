@@ -179,24 +179,10 @@ class Board {
     List<List<Point>> redblueyellowgreenLinePositions = [];
     /* *!SECTION */
     for (var teamcolor in TeamColors.values) {
-      String currentTurnColorCode = teamcolor == TeamColors.red
-          ? 'R'
-          : teamcolor == TeamColors.blue
-              ? 'B'
-              : teamcolor == TeamColors.yellow
-                  ? 'Y'
-                  : teamcolor == TeamColors.green
-                      ? "G"
-                      : "ufjf";
-      Point currentTurnTowerPosition = teamcolor == TeamColors.red
-          ? Point(rowIndex: 0, colIndex: 0)
-          : teamcolor == TeamColors.blue
-              ? Point(rowIndex: 0, colIndex: 8)
-              : teamcolor == TeamColors.yellow
-                  ? Point(rowIndex: 12, colIndex: 8)
-                  : teamcolor == TeamColors.green
-                      ? Point(rowIndex: 12, colIndex: 0)
-                      : Point(rowIndex: 0, colIndex: 0);
+      String currentTurnColorCode =
+          Convertions.getColorCodeFromTeamColorEnum(teamcolor);
+      Point currentTurnTowerPosition =
+          Convertions.getTowerPositionFromTeamColorEnum(teamcolor);
       Board board = Board();
       List<Point> Line = board.checkConnections(
           towerPosition: currentTurnTowerPosition,
@@ -213,24 +199,10 @@ class Board {
 
   static Future<void> checkBoard() async {
     for (var teamcolor in TeamColors.values) {
-      String currentTurnColorCode = teamcolor == TeamColors.red
-          ? 'R'
-          : teamcolor == TeamColors.blue
-              ? 'B'
-              : teamcolor == TeamColors.yellow
-                  ? 'Y'
-                  : teamcolor == TeamColors.green
-                      ? "G"
-                      : "ufjf";
-      Point currentTurnTowerPosition = teamcolor == TeamColors.red
-          ? Point(rowIndex: 0, colIndex: 0)
-          : teamcolor == TeamColors.blue
-              ? Point(rowIndex: 0, colIndex: 8)
-              : teamcolor == TeamColors.yellow
-                  ? Point(rowIndex: 12, colIndex: 8)
-                  : teamcolor == TeamColors.green
-                      ? Point(rowIndex: 12, colIndex: 0)
-                      : Point(rowIndex: 0, colIndex: 0);
+      String currentTurnColorCode =
+          Convertions.getColorCodeFromTeamColorEnum(teamcolor);
+      Point currentTurnTowerPosition =
+          Convertions.getTowerPositionFromTeamColorEnum(teamcolor);
       Board board = Board();
       List<Point> Line = board.checkConnections(
           towerPosition: currentTurnTowerPosition,
@@ -266,6 +238,7 @@ class Board {
 class GameVariables {
   static Rx<TeamColors> currentTurn = TeamColors.red.obs;
   static String redPlayerName = 'Youssif';
+  static RxInt turnRemainingTroops = 0.obs;
   static String bluePlayerName = 'Osama';
   static String yellowPlayerName = 'Mohammed';
   static String greenPlayerName = 'Khalil';

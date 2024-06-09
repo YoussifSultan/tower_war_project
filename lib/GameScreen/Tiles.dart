@@ -16,24 +16,10 @@ class CustomTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      TileStatus cellStatus = CellData.value.contains('T')
-          ? TileStatus.TowerTile
-          : CellData.value.contains('W')
-              ? TileStatus.TroopsTile
-              : CellData.value.contains('.')
-                  ? TileStatus.deadTroopsTile
-                  : CellData.value == '_'
-                      ? TileStatus.blankTile
-                      : TileStatus.blankTile;
-      TeamColors teamColor = CellData.value.contains('R')
-          ? TeamColors.red
-          : CellData.value.contains('B')
-              ? TeamColors.blue
-              : CellData.value.contains('Y')
-                  ? TeamColors.yellow
-                  : CellData.value.contains('G')
-                      ? TeamColors.green
-                      : TeamColors.green;
+      TileStatus cellStatus =
+          Convertions.GetCellStatusFromCellData(CellData.value);
+      TeamColors teamColor =
+          Convertions.GetTeamColorFromCellData(CellData.value);
       if (cellStatus == TileStatus.TowerTile) {
         int numberOfTroopsInTower =
             int.parse(CellData.value.replaceAll(new RegExp(r'[^0-9]'), ''));
@@ -77,7 +63,39 @@ class TowerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        Board.addCurrentGridToHistory();
+        /* *SECTION - Check if the cell belongs to a specified line */
+        List<Point> pointsOfLine =
+            Convertions.getLinePostionAccordingToTheCurrentTurnOfATeam();
+        if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
+          Get.rawSnackbar(
+              messageText: Text(
+            'Put The Warrior near the line',
+            style: TextStyle(color: Colors.white),
+          ));
+          return;
+        }
+
+        /* *!SECTION */
+        /* *SECTION - Check if there is enough warriors */
+        if (GameVariables.turnRemainingTroops.value == 0) {
+          Get.rawSnackbar(
+              messageText: Text(
+            'There is no warriors left',
+            style: TextStyle(color: Colors.white),
+          ));
+          return;
+        }
+        /* *!SECTION */
+        String cellData = GameVariables
+            .grid[cellPosition.rowIndex][cellPosition.colIndex].string;
+        cellData = cellData.replaceAll(new RegExp(r"[0-9]+"), "");
+        if (teamColor != GameVariables.currentTurn.value) {
+          GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
+              cellData + '${(numOfTroopsInTower.value - 2)}');
+          GameVariables.turnRemainingTroops(
+              GameVariables.turnRemainingTroops.value - 1);
+          Board.addCurrentGridToHistory();
+        }
       },
       child: Container(
           clipBehavior: Clip.hardEdge,
@@ -128,15 +146,8 @@ class TroopsTile extends StatelessWidget {
       onTap: () {
         /* *SECTION - Check if the cell belongs to a specified line */
         List<Point> pointsOfLine =
-            GameVariables.currentTurn.value == TeamColors.red
-                ? GameVariables.redLinePositions
-                : GameVariables.currentTurn.value == TeamColors.blue
-                    ? GameVariables.blueLinePositions
-                    : GameVariables.currentTurn.value == TeamColors.yellow
-                        ? GameVariables.yellowLinePosition
-                        : GameVariables.currentTurn.value == TeamColors.green
-                            ? GameVariables.greenLinePosition
-                            : GameVariables.redLinePositions;
+            Convertions.getLinePostionAccordingToTheCurrentTurnOfATeam();
+        ;
         if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
           Get.rawSnackbar(
               messageText: Text(
@@ -146,9 +157,19 @@ class TroopsTile extends StatelessWidget {
           return;
         }
         /* *!SECTION */
+        /* *SECTION - Check if there is enough warriors */
+        if (GameVariables.turnRemainingTroops.value == 0) {
+          Get.rawSnackbar(
+              messageText: Text(
+            'There is no warriors left',
+            style: TextStyle(color: Colors.white),
+          ));
+          return;
+        }
+        /* *!SECTION */
         String cellData = GameVariables
             .grid[cellPosition.rowIndex][cellPosition.colIndex].string;
-        cellData = cellData.replaceAll(new RegExp(r"[0-9]+"), "");
+
         if (teamColor == GameVariables.currentTurn.value) {
           GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
               cellData + '${(numberOfTroops!.value + 1)}');
@@ -160,6 +181,8 @@ class TroopsTile extends StatelessWidget {
                 [cellPosition.colIndex]("_");
           }
         }
+        GameVariables.turnRemainingTroops(
+            GameVariables.turnRemainingTroops.value - 1);
         Board.addCurrentGridToHistory();
         Board.updateTeamsLine();
       },
@@ -212,15 +235,8 @@ class DeadTroopsTile extends StatelessWidget {
         onTap: () {
           /* *SECTION - Check if the cell belongs to a specified line */
           List<Point> pointsOfLine =
-              GameVariables.currentTurn.value == TeamColors.red
-                  ? GameVariables.redLinePositions
-                  : GameVariables.currentTurn.value == TeamColors.blue
-                      ? GameVariables.blueLinePositions
-                      : GameVariables.currentTurn.value == TeamColors.yellow
-                          ? GameVariables.yellowLinePosition
-                          : GameVariables.currentTurn.value == TeamColors.green
-                              ? GameVariables.greenLinePosition
-                              : GameVariables.redLinePositions;
+              Convertions.getLinePostionAccordingToTheCurrentTurnOfATeam();
+          ;
           if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
             Get.rawSnackbar(
                 messageText: Text(
@@ -231,6 +247,16 @@ class DeadTroopsTile extends StatelessWidget {
           }
 
           /* *!SECTION */
+          /* *SECTION - Check if there is enough warriors */
+          if (GameVariables.turnRemainingTroops.value == 0) {
+            Get.rawSnackbar(
+                messageText: Text(
+              'There is no warriors left',
+              style: TextStyle(color: Colors.white),
+            ));
+            return;
+          }
+          /* *!SECTION */
           String cellData = GameVariables
               .grid[cellPosition.rowIndex][cellPosition.colIndex].string;
           String celltype = cellData.replaceAll(new RegExp(r"[0-9]+"), "");
@@ -240,6 +266,8 @@ class DeadTroopsTile extends StatelessWidget {
             GameVariables.grid[cellPosition.rowIndex]
                 [cellPosition.colIndex]("_");
           }
+          GameVariables.turnRemainingTroops(
+              GameVariables.turnRemainingTroops.value - 1);
           Board.addCurrentGridToHistory();
           Board.updateTeamsLine();
         },
@@ -284,15 +312,8 @@ class BlankTile extends StatelessWidget {
         onTap: () {
           /* *SECTION - Check if the cell belongs to a specified line */
           List<Point> pointsOfLine =
-              GameVariables.currentTurn.value == TeamColors.red
-                  ? GameVariables.redLinePositions
-                  : GameVariables.currentTurn.value == TeamColors.blue
-                      ? GameVariables.blueLinePositions
-                      : GameVariables.currentTurn.value == TeamColors.yellow
-                          ? GameVariables.yellowLinePosition
-                          : GameVariables.currentTurn.value == TeamColors.green
-                              ? GameVariables.greenLinePosition
-                              : GameVariables.redLinePositions;
+              Convertions.getLinePostionAccordingToTheCurrentTurnOfATeam();
+
           if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
             Get.rawSnackbar(
                 messageText: Text(
@@ -303,19 +324,24 @@ class BlankTile extends StatelessWidget {
           }
 
           /* *!SECTION */
+          /* *SECTION - Check if there is enough warriors */
+          if (GameVariables.turnRemainingTroops.value == 0) {
+            Get.rawSnackbar(
+                messageText: Text(
+              'There is no warriors left',
+              style: TextStyle(color: Colors.white),
+            ));
+            return;
+          }
+          /* *!SECTION */
           String currentTurnColorCode =
-              GameVariables.currentTurn.value == TeamColors.red
-                  ? 'R'
-                  : GameVariables.currentTurn.value == TeamColors.blue
-                      ? 'B'
-                      : GameVariables.currentTurn.value == TeamColors.yellow
-                          ? 'Y'
-                          : GameVariables.currentTurn.value == TeamColors.green
-                              ? "G"
-                              : "ufjf";
+              Convertions.getColorCodeFromTeamColorEnum(
+                  GameVariables.currentTurn.value);
 
           GameVariables.grid[cellPosition.rowIndex]
               [cellPosition.colIndex]('W${currentTurnColorCode}1');
+          GameVariables.turnRemainingTroops(
+              GameVariables.turnRemainingTroops.value - 1);
 
           Board.addCurrentGridToHistory();
           Board.updateTeamsLine();

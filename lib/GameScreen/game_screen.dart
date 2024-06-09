@@ -35,6 +35,8 @@ class _GameScreenState extends State<GameScreen> {
           Board.convertListStringToListRxString(val);
           isUndoFunctionActivated = false;
           Board.updateTeamsLine();
+          GameVariables.turnRemainingTroops(
+              GameVariables.turnRemainingTroops.value + 1);
         }
       },
     );
@@ -44,15 +46,7 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     int rowCount = -1;
-    Color currentTurnColor = GameVariables.currentTurn.value == TeamColors.red
-        ? Color.fromRGBO(240, 73, 79, 1)
-        : GameVariables.currentTurn.value == TeamColors.blue
-            ? Color.fromRGBO(76, 179, 212, 1)
-            : GameVariables.currentTurn.value == TeamColors.yellow
-                ? Color.fromRGBO(211, 183, 120, 1)
-                : GameVariables.currentTurn.value == TeamColors.green
-                    ? Color.fromRGBO(37, 68, 65, 1)
-                    : Color.fromRGBO(37, 68, 65, 1);
+    Color currentTurnColor = Convertions.getColorOfCurrentTurn();
     return Scaffold(
       backgroundColor: currentTurnColor,
       body: ListView(
@@ -86,16 +80,33 @@ class _GameScreenState extends State<GameScreen> {
           ),
           /* *SECTION - Important Data */
           Container(
-            margin: EdgeInsets.only(left: 10, right: 10),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  dataCardTile(
-                      hintingText: 'hintingText', DataText: 'DataText'.obs),
-                  dataCardTile(
-                      hintingText: 'hintingText', DataText: 'DataText'.obs),
+                  Obx(() {
+                    return dataCardTile(
+                        width: 200,
+                        hintingText:
+                            'Remaining Warriors For ${GameVariables.currentTurn.value.name} Turn',
+                        DataText:
+                            '${GameVariables.turnRemainingTroops.value}'.obs);
+                  }),
+                  Obx(() {
+                    Point towerPosition =
+                        Convertions.getTowerPositionFromTeamColorEnum(
+                            GameVariables.currentTurn.value);
+                    int numberOfTroopsInTower = int.parse(GameVariables
+                        .grid[towerPosition.rowIndex][towerPosition.colIndex]
+                        .value
+                        .replaceAll(new RegExp(r'[^0-9]'), ''));
+                    return dataCardTile(
+                        width: 200,
+                        hintingText:
+                            'Warriors in ${GameVariables.currentTurn.value.name} Tower ',
+                        DataText: '${numberOfTroopsInTower}'.obs);
+                  }),
                   dataCardTile(
                       hintingText: 'hintingText', DataText: 'DataText'.obs),
                   dataCardTile(
@@ -118,6 +129,7 @@ class _GameScreenState extends State<GameScreen> {
           IconTile(
               onTap: () {
                 isUndoFunctionActivated = true;
+
                 GameVariables.historyController.undo();
               },
               ForegroundIcon: Icons.undo_rounded),
@@ -139,6 +151,22 @@ class _GameScreenState extends State<GameScreen> {
 
                   default:
                 }
+                /* *SECTION - Take 5 warriors from tower & give them to remaining warriors*/
+                Point towerPosition =
+                    Convertions.getTowerPositionFromTeamColorEnum(
+                        GameVariables.currentTurn.value);
+                String cellData = GameVariables
+                    .grid[towerPosition.rowIndex][towerPosition.colIndex].string
+                    .replaceAll(new RegExp(r"[0-9]+"), "");
+
+                int numberOfTroopsInTower = int.parse(GameVariables
+                    .grid[towerPosition.rowIndex][towerPosition.colIndex].value
+                    .replaceAll(new RegExp(r'[^0-9]'), ''));
+                GameVariables.grid[towerPosition.rowIndex]
+                        [towerPosition.colIndex](
+                    cellData + '${(numberOfTroopsInTower - 5)}');
+                GameVariables.turnRemainingTroops(5);
+                /* *!SECTION */
                 setState(() {});
                 GameVariables.historyController.clearHistory();
               },
@@ -171,6 +199,22 @@ class _GameScreenState extends State<GameScreen> {
             onAnimationEnd: () {
               Future.delayed(Durations.long4, () {
                 Get.back();
+                /* *SECTION - Take 5 warriors from tower & give them to remaining warriors*/
+                Point towerPosition =
+                    Convertions.getTowerPositionFromTeamColorEnum(
+                        GameVariables.currentTurn.value);
+                String cellData = GameVariables
+                    .grid[towerPosition.rowIndex][towerPosition.colIndex].string
+                    .replaceAll(new RegExp(r"[0-9]+"), "");
+
+                int numberOfTroopsInTower = int.parse(GameVariables
+                    .grid[towerPosition.rowIndex][towerPosition.colIndex].value
+                    .replaceAll(new RegExp(r'[^0-9]'), ''));
+                GameVariables.grid[towerPosition.rowIndex]
+                        [towerPosition.colIndex](
+                    cellData + '${(numberOfTroopsInTower - 5)}');
+                GameVariables.turnRemainingTroops(5);
+                /* *!SECTION */
                 setState(() {});
               });
             },
