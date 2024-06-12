@@ -1,5 +1,8 @@
-import 'package:get/get_rx/src/rx_types/rx_types.dart';
-import 'package:tower_war/CommonUsed/Enums.dart';
+import 'package:flutter/material.dart';
+import 'package:get/get.dart';
+import 'package:tower_war/Classes/colorData.dart';
+import 'package:tower_war/Classes/player.dart';
+
 import 'package:undo/undo.dart';
 
 class Point {
@@ -128,8 +131,10 @@ class Board {
     return sameColorCellsLinePosition;
   }
 
-  void eraseAllCellTypeOutsideTheLineOfPoints(
+  static void eraseAllCellTypeOutsideTheLineOfPoints(
       List<Point> line, String cellType) {
+    int numOfRows = GameVariables.grid.length;
+    int numOfColumns = GameVariables.grid[0].length;
     for (var indexOfRow = 0; indexOfRow < numOfRows; indexOfRow++) {
       List<RxString> row = GameVariables.grid[indexOfRow];
       for (var indexOfCol = 0; indexOfCol < numOfColumns; indexOfCol++) {
@@ -175,41 +180,25 @@ class Board {
   }
 
   static void updateTeamsLine() {
-    /* *SECTION - specifing the lines */
-    List<List<Point>> redblueyellowgreenLinePositions = [];
-    /* *!SECTION */
-    for (var teamcolor in TeamColors.values) {
-      String currentTurnColorCode =
-          Convertions.getColorCodeFromTeamColorEnum(teamcolor);
-      Point currentTurnTowerPosition =
-          Convertions.getTowerPositionFromTeamColorEnum(teamcolor);
+    for (var player in GameVariables.activePlayers) {
+      String currentTurnColorCode = player.colorData.colorCode;
+      Point currentTurnTowerPosition = player.towerPosition;
       Board board = Board();
       List<Point> Line = board.checkConnections(
           towerPosition: currentTurnTowerPosition,
           CellType: currentTurnColorCode);
-      redblueyellowgreenLinePositions.add(Line);
+      player.linePositions = Line;
     }
-    /* *SECTION - Assigning the lines positions*/
-    GameVariables.redLinePositions = redblueyellowgreenLinePositions[0];
-    GameVariables.blueLinePositions = redblueyellowgreenLinePositions[1];
-    GameVariables.yellowLinePosition = redblueyellowgreenLinePositions[2];
-    GameVariables.greenLinePosition = redblueyellowgreenLinePositions[3];
-    /* *!SECTION */
   }
 
   static Future<void> checkBoard() async {
-    for (var teamcolor in TeamColors.values) {
-      String currentTurnColorCode =
-          Convertions.getColorCodeFromTeamColorEnum(teamcolor);
-      Point currentTurnTowerPosition =
-          Convertions.getTowerPositionFromTeamColorEnum(teamcolor);
-      Board board = Board();
-      List<Point> Line = board.checkConnections(
-          towerPosition: currentTurnTowerPosition,
-          CellType: currentTurnColorCode);
-      board.eraseAllCellTypeOutsideTheLineOfPoints(Line, currentTurnColorCode);
-      Board.addCurrentGridToHistory();
+    updateTeamsLine();
+    for (var player in GameVariables.activePlayers) {
+      String currentTurnColorCode = player.colorData.colorCode;
+      Board.eraseAllCellTypeOutsideTheLineOfPoints(
+          player.linePositions, currentTurnColorCode);
     }
+    Board.addCurrentGridToHistory();
   }
 
   static void addCurrentGridToHistory() {
@@ -233,54 +222,75 @@ class Board {
       return false;
     }
   }
+
+  static bool isCellValidToAddWarriors(Point cellPosition) {
+    /* *SECTION - Check if the cell belongs to a specified line */
+    List<Point> pointsOfLine = GameVariables
+        .activePlayers[GameVariables.currentPlayerIndex.value].linePositions;
+    if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
+      Get.rawSnackbar(
+          messageText: Text(
+        'Put The Warrior near the line',
+        style: TextStyle(color: Colors.white),
+      ));
+      return false;
+    }
+
+    /* *!SECTION */
+    /* *SECTION - Check if there is enough warriors */
+    // if (GameVariables.turnRemainingTroops.value == 0) {
+    //   Get.rawSnackbar(
+    //       messageText: Text(
+    //     'There is no warriors left',
+    //     style: TextStyle(color: Colors.white),
+    //   ));
+    //   return false;
+    // }
+    /* *!SECTION */
+    return true;
+  }
 }
 
 class GameVariables {
-  static Rx<TeamColors> currentTurn = TeamColors.red.obs;
-  static String redPlayerName = 'Youssif';
-  static RxInt turnRemainingTroops = 0.obs;
-  static String bluePlayerName = 'Osama';
-  static String yellowPlayerName = 'Mohammed';
-  static String greenPlayerName = 'Khalil';
-  static List<Point> redLinePositions = [Point(rowIndex: 0, colIndex: 0)];
-  static List<Point> blueLinePositions = [Point(rowIndex: 0, colIndex: 7)];
-  static List<Point> yellowLinePosition = [Point(rowIndex: 12, colIndex: 7)];
-  static List<Point> greenLinePosition = [Point(rowIndex: 12, colIndex: 0)];
-  static late SimpleStack<List<List<String>>> historyController;
-
-  static List<List<RxString>> grid = [
-    [
-      'TR100'.obs,
-      '_'.obs,
-      '_'.obs,
-      '_'.obs,
-      '_'.obs,
-      '_'.obs,
-      '_'.obs,
-      'TB100'.obs
-    ],
-    ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
-    ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
-    ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
-    ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
-    ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
-    ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
-    ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
-    ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
-    ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
-    ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
-    ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
-    [
-      'TG100'.obs,
-      '_'.obs,
-      '_'.obs,
-      '_'.obs,
-      '_'.obs,
-      '_'.obs,
-      '_'.obs,
-      'TY100'.obs
-    ],
+  static List<Colordata> availableColors = [
+    Colordata(
+        color: Color.fromRGBO(240, 73, 79, 1), colorCode: 'R', name: 'red'),
+    Colordata(
+        color: Color.fromRGBO(76, 179, 212, 1), colorCode: 'B', name: 'blue'),
+    Colordata(
+        color: Color.fromRGBO(211, 183, 120, 1),
+        colorCode: 'Y',
+        name: 'yellow'),
+    Colordata(
+        color: Color.fromRGBO(37, 68, 65, 1), colorCode: 'G', name: 'green'),
   ];
+  static Rx<int> currentPlayerIndex = 0.obs;
+  static List<Player> activePlayers = [
+    Player(
+        name: 'Youssif',
+        linePositions: [Point(rowIndex: 0, colIndex: 0)],
+        colorData: GameVariables.availableColors
+            .firstWhere((color) => color.colorCode == 'R'),
+        towerPosition: Point(rowIndex: 0, colIndex: 0)),
+    Player(
+      name: 'Osama',
+      linePositions: [Point(rowIndex: 0, colIndex: 7)],
+      colorData: GameVariables.availableColors
+          .firstWhere((color) => color.colorCode == 'B'),
+      towerPosition: Point(rowIndex: 0, colIndex: 7),
+    ),
+    Player(
+        name: 'Khalil',
+        linePositions: [Point(rowIndex: 12, colIndex: 7)],
+        colorData: GameVariables.availableColors
+            .firstWhere((color) => color.colorCode == 'Y'),
+        towerPosition: Point(rowIndex: 12, colIndex: 7)),
+  ];
+
+  static late SimpleStack<List<List<String>>> historyController;
+  static RxInt turnRemainingTroops = 0.obs;
+
+  static List<List<RxString>> grid = [];
 }
 
 /* Operation In Action

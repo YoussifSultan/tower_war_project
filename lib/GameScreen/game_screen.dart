@@ -6,7 +6,6 @@ import 'package:get/get.dart';
 import 'package:tower_war/CommonUsed/Button_Tile.dart';
 import 'package:tower_war/CommonUsed/Constants.dart';
 import 'package:tower_war/CommonUsed/DataCellTile.dart';
-import 'package:tower_war/CommonUsed/Enums.dart';
 import 'package:tower_war/GameScreen/Board.dart';
 import 'package:tower_war/GameScreen/Tiles.dart';
 import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
@@ -25,6 +24,39 @@ class _GameScreenState extends State<GameScreen> {
 
   @override
   void initState() {
+    GameVariables.grid = [
+      [
+        'TR20'.obs,
+        '_'.obs,
+        '_'.obs,
+        '_'.obs,
+        '_'.obs,
+        '_'.obs,
+        '_'.obs,
+        'TB20'.obs
+      ],
+      ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
+      ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
+      ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
+      ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
+      ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
+      ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
+      ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
+      ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
+      ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
+      ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
+      ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
+      [
+        GameVariables.activePlayers.length == 4 ? 'TG20'.obs : '_'.obs,
+        '_'.obs,
+        '_'.obs,
+        '_'.obs,
+        '_'.obs,
+        '_'.obs,
+        '_'.obs,
+        GameVariables.activePlayers.length >= 3 ? 'TY20'.obs : '_'.obs
+      ]
+    ];
     /* *SECTION - fortune wheel */
     ShowFortuneWheelToChooseWhichPlayerBeginsFirst();
     /* *!SECTION */
@@ -46,7 +78,8 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     int rowCount = -1;
-    Color currentTurnColor = Convertions.getColorOfCurrentTurn();
+    Color currentTurnColor = GameVariables
+        .activePlayers[GameVariables.currentPlayerIndex.value].colorData.color;
     return Scaffold(
       backgroundColor: currentTurnColor,
       body: ListView(
@@ -89,14 +122,14 @@ class _GameScreenState extends State<GameScreen> {
                     return dataCardTile(
                         width: 200,
                         hintingText:
-                            'Remaining Warriors For ${GameVariables.currentTurn.value.name} Turn',
+                            'Remaining Warriors For ${GameVariables.activePlayers[GameVariables.currentPlayerIndex.value].colorData.name} Turn',
                         DataText:
                             '${GameVariables.turnRemainingTroops.value}'.obs);
                   }),
                   Obx(() {
-                    Point towerPosition =
-                        Convertions.getTowerPositionFromTeamColorEnum(
-                            GameVariables.currentTurn.value);
+                    Point towerPosition = GameVariables
+                        .activePlayers[GameVariables.currentPlayerIndex.value]
+                        .towerPosition;
                     int numberOfTroopsInTower = int.parse(GameVariables
                         .grid[towerPosition.rowIndex][towerPosition.colIndex]
                         .value
@@ -104,7 +137,7 @@ class _GameScreenState extends State<GameScreen> {
                     return dataCardTile(
                         width: 200,
                         hintingText:
-                            'Warriors in ${GameVariables.currentTurn.value.name} Tower ',
+                            'Warriors in ${GameVariables.activePlayers[GameVariables.currentPlayerIndex.value].colorData.name} Tower ',
                         DataText: '${numberOfTroopsInTower}'.obs);
                   }),
                   dataCardTile(
@@ -121,58 +154,99 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ],
       ),
-      bottomNavigationBar: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: [
-          /* *SECTION - ToolTip */
-          /* *SECTION - undo Button */
-          IconTile(
-              onTap: () {
-                isUndoFunctionActivated = true;
+      bottomNavigationBar: SingleChildScrollView(
+        scrollDirection: Axis.horizontal,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            /* *SECTION - ToolTip */
+            /* *SECTION - undo Button */
+            IconTile(
+                onTap: () {
+                  isUndoFunctionActivated = true;
 
-                GameVariables.historyController.undo();
-              },
-              ForegroundIcon: Icons.undo_rounded),
-          /* *!SECTION */
-          /* *SECTION - end Turn Button */
-          IconTile(
-              onTap: () async {
-                await Board.checkBoard();
-                switch (GameVariables.currentTurn.value) {
-                  case TeamColors.red:
-                    GameVariables.currentTurn(TeamColors.blue);
-                  case TeamColors.blue:
-                    GameVariables.currentTurn(TeamColors.yellow);
-                  case TeamColors.yellow:
-                    GameVariables.currentTurn(TeamColors.green);
-                  case TeamColors.green:
-                    GameVariables.currentTurn(TeamColors.red);
-                    break;
+                  GameVariables.historyController.undo();
+                },
+                ForegroundIcon: Icons.undo_rounded),
+            /* *!SECTION */
+            /* *SECTION - end Turn Button */
+            IconTile(
+                onTap: () async {
+                  await Board.checkBoard();
+                  if (GameVariables.activePlayers[
+                          GameVariables.currentPlayerIndex.value] ==
+                      GameVariables.activePlayers.last) {
+                    GameVariables.currentPlayerIndex(0);
+                  } else {
+                    GameVariables.currentPlayerIndex(
+                        GameVariables.currentPlayerIndex.value + 1);
+                  }
 
-                  default:
-                }
-                /* *SECTION - Take 5 warriors from tower & give them to remaining warriors*/
-                Point towerPosition =
-                    Convertions.getTowerPositionFromTeamColorEnum(
-                        GameVariables.currentTurn.value);
-                String cellData = GameVariables
-                    .grid[towerPosition.rowIndex][towerPosition.colIndex].string
-                    .replaceAll(new RegExp(r"[0-9]+"), "");
+                  /* *SECTION - Take 5 warriors from tower & give them to remaining warriors*/
+                  Point towerPosition = GameVariables
+                      .activePlayers[GameVariables.currentPlayerIndex.value]
+                      .towerPosition;
+                  String cellData = GameVariables
+                      .grid[towerPosition.rowIndex][towerPosition.colIndex]
+                      .string
+                      .replaceAll(new RegExp(r"[0-9]+"), "");
 
-                int numberOfTroopsInTower = int.parse(GameVariables
-                    .grid[towerPosition.rowIndex][towerPosition.colIndex].value
-                    .replaceAll(new RegExp(r'[^0-9]'), ''));
-                GameVariables.grid[towerPosition.rowIndex]
-                        [towerPosition.colIndex](
-                    cellData + '${(numberOfTroopsInTower - 5)}');
-                GameVariables.turnRemainingTroops(5);
-                /* *!SECTION */
-                setState(() {});
-                GameVariables.historyController.clearHistory();
-              },
-              ForegroundIcon: Icons.done_all_outlined),
-          /* *!SECTION */
-        ],
+                  int numberOfTroopsInTower = int.parse(GameVariables
+                      .grid[towerPosition.rowIndex][towerPosition.colIndex]
+                      .value
+                      .replaceAll(new RegExp(r'[^0-9]'), ''));
+                  /* *SECTION - if the tower doesn't have enough troops */
+                  while (numberOfTroopsInTower - 5 < 1) {
+                    if (GameVariables.activePlayers[
+                            GameVariables.currentPlayerIndex.value] ==
+                        GameVariables.activePlayers.last) {
+                      GameVariables.currentPlayerIndex(0);
+                    } else {
+                      GameVariables.currentPlayerIndex(
+                          GameVariables.currentPlayerIndex.value);
+                    }
+                    GameVariables
+                        .activePlayers[GameVariables.currentPlayerIndex.value]
+                        .linePositions = [];
+                    Board.eraseAllCellTypeOutsideTheLineOfPoints(
+                        [],
+                        GameVariables
+                            .activePlayers[
+                                GameVariables.currentPlayerIndex.value]
+                            .colorData
+                            .colorCode);
+                    GameVariables.grid[towerPosition.rowIndex]
+                            [towerPosition.colIndex](
+                        'TC${GameVariables.availableColors.firstWhere((colorData) => cellData.contains(colorData.colorCode)).colorCode}');
+                    GameVariables.activePlayers.remove(
+                        GameVariables.activePlayers.firstWhere((player) =>
+                            cellData.contains(player.colorData.colorCode)));
+                    towerPosition = GameVariables
+                        .activePlayers[GameVariables.currentPlayerIndex.value]
+                        .towerPosition;
+                    cellData = GameVariables
+                        .grid[towerPosition.rowIndex][towerPosition.colIndex]
+                        .string
+                        .replaceAll(new RegExp(r"[0-9]+"), "");
+
+                    numberOfTroopsInTower = int.parse(GameVariables
+                        .grid[towerPosition.rowIndex][towerPosition.colIndex]
+                        .value
+                        .replaceAll(new RegExp(r'[^0-9]'), ''));
+                  }
+                  /* *!SECTION */
+                  GameVariables.grid[towerPosition.rowIndex]
+                          [towerPosition.colIndex](
+                      cellData + '${(numberOfTroopsInTower - 5)}');
+                  GameVariables.turnRemainingTroops(5);
+                  /* *!SECTION */
+                  setState(() {});
+                  GameVariables.historyController.clearHistory();
+                },
+                ForegroundIcon: Icons.done_all_outlined),
+            /* *!SECTION */
+          ],
+        ),
       ),
 
       /* *!SECTION */
@@ -184,10 +258,9 @@ class _GameScreenState extends State<GameScreen> {
     Future.delayed(
       Durations.long4,
       () {
-        GameVariables.currentTurn(TeamColors.values[Random().nextInt(3)]);
+        GameVariables.currentPlayerIndex(Random().nextInt(3));
 
-        fortuneWheelController.add(GameVariables.currentTurn.value.index);
-
+        fortuneWheelController.add(GameVariables.currentPlayerIndex.value);
         Get.dialog(Container(
           width: Constants.screenWidth * 0.7,
           height: Constants.screenHeight * 0.5,
@@ -200,9 +273,9 @@ class _GameScreenState extends State<GameScreen> {
               Future.delayed(Durations.long4, () {
                 Get.back();
                 /* *SECTION - Take 5 warriors from tower & give them to remaining warriors*/
-                Point towerPosition =
-                    Convertions.getTowerPositionFromTeamColorEnum(
-                        GameVariables.currentTurn.value);
+                Point towerPosition = GameVariables
+                    .activePlayers[GameVariables.currentPlayerIndex.value]
+                    .towerPosition;
                 String cellData = GameVariables
                     .grid[towerPosition.rowIndex][towerPosition.colIndex].string
                     .replaceAll(new RegExp(r"[0-9]+"), "");
@@ -218,32 +291,14 @@ class _GameScreenState extends State<GameScreen> {
                 setState(() {});
               });
             },
-            items: [
-              FortuneItem(
+            items: GameVariables.activePlayers.map((player) {
+              return FortuneItem(
                   style: FortuneItemStyle(
-                    color: Color.fromRGBO(
-                        240, 73, 79, 1), // <-- custom circle slice fill color
-                  ),
-                  child: Text(GameVariables.redPlayerName)),
-              FortuneItem(
-                  style: FortuneItemStyle(
-                    color: Color.fromRGBO(
-                        76, 179, 212, 1), // <-- custom circle slice fill color
-                  ),
-                  child: Text(GameVariables.bluePlayerName)),
-              FortuneItem(
-                  style: FortuneItemStyle(
-                    color: Color.fromRGBO(
-                        211, 183, 120, 1), // <-- custom circle slice fill color
-                  ),
-                  child: Text(GameVariables.yellowPlayerName)),
-              FortuneItem(
-                  style: FortuneItemStyle(
-                    color: Color.fromRGBO(
-                        37, 68, 65, 1), // <-- custom circle slice fill color
-                  ),
-                  child: Text(GameVariables.greenPlayerName)),
-            ],
+                      color: player
+                          .colorData.color // <-- custom circle slice fill color
+                      ),
+                  child: Text(player.name));
+            }).toList(),
           ),
         ));
       },

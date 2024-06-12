@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_rx/src/rx_types/rx_types.dart';
-import 'package:get/get_state_manager/src/rx_flutter/rx_obx_widget.dart';
 import 'package:rive/rive.dart';
+import 'package:tower_war/Classes/colorData.dart';
 import 'package:tower_war/CommonUsed/Enums.dart';
 import 'package:tower_war/GameScreen/Board.dart';
 
@@ -18,8 +17,9 @@ class CustomTile extends StatelessWidget {
     return Obx(() {
       TileStatus cellStatus =
           Convertions.GetCellStatusFromCellData(CellData.value);
-      TeamColors teamColor =
-          Convertions.GetTeamColorFromCellData(CellData.value);
+      Colordata teamColor = GameVariables.availableColors.firstWhere(
+          (color) => CellData.value.contains(color.colorCode),
+          orElse: () => GameVariables.availableColors[0]);
       if (cellStatus == TileStatus.TowerTile) {
         int numberOfTroopsInTower =
             int.parse(CellData.value.replaceAll(new RegExp(r'[^0-9]'), ''));
@@ -42,6 +42,9 @@ class CustomTile extends StatelessWidget {
         return DeadTroopsTile(
             numberOfTroops: numberOfDeadTroopsInCell.obs,
             cellPosition: CellPosition);
+      } else if (cellStatus == TileStatus.BrokenTowerTile) {
+        return BrokenTowerTile(
+            teamColor: teamColor, cellPosition: CellPosition);
       } else {
         return BlankTile(cellPosition: CellPosition);
       }
@@ -55,7 +58,7 @@ class TowerTile extends StatelessWidget {
       required this.teamColor,
       required this.numOfTroopsInTower,
       required this.cellPosition});
-  final TeamColors teamColor;
+  final Colordata teamColor;
   final Point cellPosition;
 
   final RxInt numOfTroopsInTower;
@@ -63,37 +66,27 @@ class TowerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        /* *SECTION - Check if the cell belongs to a specified line */
-        List<Point> pointsOfLine =
-            Convertions.getLinePostionAccordingToTheCurrentTurnOfATeam();
-        if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
-          Get.rawSnackbar(
-              messageText: Text(
-            'Put The Warrior near the line',
-            style: TextStyle(color: Colors.white),
-          ));
+        if (!Board.isCellValidToAddWarriors(cellPosition)) {
           return;
         }
-
-        /* *!SECTION */
-        /* *SECTION - Check if there is enough warriors */
-        if (GameVariables.turnRemainingTroops.value == 0) {
-          Get.rawSnackbar(
-              messageText: Text(
-            'There is no warriors left',
-            style: TextStyle(color: Colors.white),
-          ));
-          return;
-        }
-        /* *!SECTION */
         String cellData = GameVariables
             .grid[cellPosition.rowIndex][cellPosition.colIndex].string;
         cellData = cellData.replaceAll(new RegExp(r"[0-9]+"), "");
-        if (teamColor != GameVariables.currentTurn.value) {
+        if (teamColor !=
+            GameVariables.activePlayers[GameVariables.currentPlayerIndex.value]
+                .colorData) {
           GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
               cellData + '${(numOfTroopsInTower.value - 2)}');
           GameVariables.turnRemainingTroops(
               GameVariables.turnRemainingTroops.value - 1);
+          if (numOfTroopsInTower.value < 1) {
+            GameVariables.activePlayers[GameVariables.currentPlayerIndex.value]
+                .linePositions = [];
+            GameVariables.grid[cellPosition.rowIndex]
+                [cellPosition.colIndex]('TC${teamColor.colorCode}');
+            GameVariables.activePlayers.remove(GameVariables
+                .activePlayers[GameVariables.currentPlayerIndex.value]);
+          }
           Board.addCurrentGridToHistory();
         }
       },
@@ -108,7 +101,8 @@ class TowerTile extends StatelessWidget {
           child: Stack(
             children: [
               RiveAnimation.asset(
-                  'assets/animations/towers/${teamColor.name}tower.riv'),
+                'assets/animations/towers/${teamColor.name}tower.riv',
+              ),
               Align(
                 alignment: Alignment.bottomRight,
                 child: Container(
@@ -130,13 +124,37 @@ class TowerTile extends StatelessWidget {
   }
 }
 
+class BrokenTowerTile extends StatelessWidget {
+  const BrokenTowerTile(
+      {super.key, required this.teamColor, required this.cellPosition});
+  final Colordata teamColor;
+  final Point cellPosition;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      clipBehavior: Clip.hardEdge,
+      alignment: Alignment.center,
+      margin: EdgeInsets.all(1),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(5),
+        color: Colors.white,
+      ),
+      child: RiveAnimation.asset(
+        'assets/animations/broken_towers/${teamColor.name}brokentower.riv',
+        stateMachines: ['State Machine 1'],
+      ),
+    );
+  }
+}
+
 class TroopsTile extends StatelessWidget {
   const TroopsTile(
       {super.key,
       required this.teamColor,
       this.numberOfTroops,
       required this.cellPosition});
-  final TeamColors teamColor;
+  final Colordata teamColor;
   final Point cellPosition;
   final RxInt? numberOfTroops;
 
@@ -144,33 +162,16 @@ class TroopsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        /* *SECTION - Check if the cell belongs to a specified line */
-        List<Point> pointsOfLine =
-            Convertions.getLinePostionAccordingToTheCurrentTurnOfATeam();
-        ;
-        if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
-          Get.rawSnackbar(
-              messageText: Text(
-            'Put The Warrior near the line',
-            style: TextStyle(color: Colors.white),
-          ));
+        if (!Board.isCellValidToAddWarriors(cellPosition)) {
           return;
         }
-        /* *!SECTION */
-        /* *SECTION - Check if there is enough warriors */
-        if (GameVariables.turnRemainingTroops.value == 0) {
-          Get.rawSnackbar(
-              messageText: Text(
-            'There is no warriors left',
-            style: TextStyle(color: Colors.white),
-          ));
-          return;
-        }
-        /* *!SECTION */
         String cellData = GameVariables
-            .grid[cellPosition.rowIndex][cellPosition.colIndex].string;
+            .grid[cellPosition.rowIndex][cellPosition.colIndex].string
+            .replaceAll(new RegExp(r"[0-9]+"), "");
 
-        if (teamColor == GameVariables.currentTurn.value) {
+        if (teamColor ==
+            GameVariables.activePlayers[GameVariables.currentPlayerIndex.value]
+                .colorData) {
           GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
               cellData + '${(numberOfTroops!.value + 1)}');
         } else {
@@ -233,30 +234,9 @@ class DeadTroopsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
-          /* *SECTION - Check if the cell belongs to a specified line */
-          List<Point> pointsOfLine =
-              Convertions.getLinePostionAccordingToTheCurrentTurnOfATeam();
-          ;
-          if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
-            Get.rawSnackbar(
-                messageText: Text(
-              'Put The Warrior near the line',
-              style: TextStyle(color: Colors.white),
-            ));
+          if (!Board.isCellValidToAddWarriors(cellPosition)) {
             return;
           }
-
-          /* *!SECTION */
-          /* *SECTION - Check if there is enough warriors */
-          if (GameVariables.turnRemainingTroops.value == 0) {
-            Get.rawSnackbar(
-                messageText: Text(
-              'There is no warriors left',
-              style: TextStyle(color: Colors.white),
-            ));
-            return;
-          }
-          /* *!SECTION */
           String cellData = GameVariables
               .grid[cellPosition.rowIndex][cellPosition.colIndex].string;
           String celltype = cellData.replaceAll(new RegExp(r"[0-9]+"), "");
@@ -310,33 +290,13 @@ class BlankTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
-          /* *SECTION - Check if the cell belongs to a specified line */
-          List<Point> pointsOfLine =
-              Convertions.getLinePostionAccordingToTheCurrentTurnOfATeam();
-
-          if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
-            Get.rawSnackbar(
-                messageText: Text(
-              'Put The Warrior near the line',
-              style: TextStyle(color: Colors.white),
-            ));
+          if (!Board.isCellValidToAddWarriors(cellPosition)) {
             return;
           }
-
-          /* *!SECTION */
-          /* *SECTION - Check if there is enough warriors */
-          if (GameVariables.turnRemainingTroops.value == 0) {
-            Get.rawSnackbar(
-                messageText: Text(
-              'There is no warriors left',
-              style: TextStyle(color: Colors.white),
-            ));
-            return;
-          }
-          /* *!SECTION */
-          String currentTurnColorCode =
-              Convertions.getColorCodeFromTeamColorEnum(
-                  GameVariables.currentTurn.value);
+          String currentTurnColorCode = GameVariables
+              .activePlayers[GameVariables.currentPlayerIndex.value]
+              .colorData
+              .colorCode;
 
           GameVariables.grid[cellPosition.rowIndex]
               [cellPosition.colIndex]('W${currentTurnColorCode}1');
