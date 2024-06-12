@@ -1,20 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tower_war/Classes/colorData.dart';
-import 'package:tower_war/Classes/player.dart';
-
-import 'package:undo/undo.dart';
-
-class Point {
-  int rowIndex, colIndex;
-  Point({
-    required this.rowIndex,
-    required this.colIndex,
-  });
-  String toString() {
-    return 'rowIndex : ${rowIndex + 1} colIndex : ${colIndex + 1} \n';
-  }
-}
+import 'package:tower_war/Classes/point.dart';
+import 'package:tower_war/GameScreen/game_variables.dart';
 
 class Board {
   late int numOfRows, numOfColumns;
@@ -86,7 +73,7 @@ class Board {
   }
 
   List<Point> checkConnections(
-      {required Point towerPosition, required String CellType}) {
+      {required Point towerPosition, required String cellType}) {
     // Take the tower position as a starting point for the loop
     // Take the cell Type which is another name for the team color we are looking for its connections
     List<Point> sameColorCellsLinePosition =
@@ -105,7 +92,7 @@ class Board {
       for (var cellPoint in endCellsInSameColorLinePosition) {
         //the ending cells could be more than one so we loop with each ending cell
         List<Point> neighbouringPointsIdenticalToSameColorCellType =
-            getNeighboringCellsPositionIdenticalToCellType(cellPoint, CellType)
+            getNeighboringCellsPositionIdenticalToCellType(cellPoint, cellType)
                 .toList();
         //This is a variable of all cells around the ending cell and has the same cell type
 
@@ -145,7 +132,7 @@ class Board {
                   point.rowIndex == indexOfRow && point.colIndex == indexOfCol)
               .isEmpty) {
             int numberOfTroopsInCell =
-                int.parse(cell.replaceAll(new RegExp(r'[^0-9]'), ''));
+                int.parse(cell.replaceAll(RegExp(r'[^0-9]'), ''));
             GameVariables.grid[indexOfRow]
                 [indexOfCol]('.$numberOfTroopsInCell');
           }
@@ -184,10 +171,10 @@ class Board {
       String currentTurnColorCode = player.colorData.colorCode;
       Point currentTurnTowerPosition = player.towerPosition;
       Board board = Board();
-      List<Point> Line = board.checkConnections(
+      List<Point> line = board.checkConnections(
           towerPosition: currentTurnTowerPosition,
-          CellType: currentTurnColorCode);
-      player.linePositions = Line;
+          cellType: currentTurnColorCode);
+      player.linePositions = line;
     }
   }
 
@@ -229,7 +216,7 @@ class Board {
         .activePlayers[GameVariables.currentPlayerIndex.value].linePositions;
     if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
       Get.rawSnackbar(
-          messageText: Text(
+          messageText: const Text(
         'Put The Warrior near the line',
         style: TextStyle(color: Colors.white),
       ));
@@ -250,75 +237,3 @@ class Board {
     return true;
   }
 }
-
-class GameVariables {
-  static List<Colordata> availableColors = [
-    Colordata(
-        color: Color.fromRGBO(240, 73, 79, 1), colorCode: 'R', name: 'red'),
-    Colordata(
-        color: Color.fromRGBO(76, 179, 212, 1), colorCode: 'B', name: 'blue'),
-    Colordata(
-        color: Color.fromRGBO(211, 183, 120, 1),
-        colorCode: 'Y',
-        name: 'yellow'),
-    Colordata(
-        color: Color.fromRGBO(37, 68, 65, 1), colorCode: 'G', name: 'green'),
-  ];
-  static Rx<int> currentPlayerIndex = 0.obs;
-  static List<Player> activePlayers = [
-    Player(
-        name: 'Youssif',
-        linePositions: [Point(rowIndex: 0, colIndex: 0)],
-        colorData: GameVariables.availableColors
-            .firstWhere((color) => color.colorCode == 'R'),
-        towerPosition: Point(rowIndex: 0, colIndex: 0)),
-    Player(
-      name: 'Osama',
-      linePositions: [Point(rowIndex: 0, colIndex: 7)],
-      colorData: GameVariables.availableColors
-          .firstWhere((color) => color.colorCode == 'B'),
-      towerPosition: Point(rowIndex: 0, colIndex: 7),
-    ),
-    Player(
-        name: 'Khalil',
-        linePositions: [Point(rowIndex: 12, colIndex: 7)],
-        colorData: GameVariables.availableColors
-            .firstWhere((color) => color.colorCode == 'Y'),
-        towerPosition: Point(rowIndex: 12, colIndex: 7)),
-  ];
-
-  static late SimpleStack<List<List<String>>> historyController;
-  static RxInt turnRemainingTroops = 0.obs;
-
-  static List<List<RxString>> grid = [];
-}
-
-/* Operation In Action
-void main() {
- 
-    List<List<String>> grid = [
-   ['_', '_', '_', '_', '_', '_', '_', '_'],
-   ['_', '_', '_', '_', '_', '_', '_', '_'],
-   ['_', '_', '_', '_', '_', '_', '_', '_'],
-   ['_', '_', '_', '_', '_', '_', '_', '_'],
-   ['_', '_', '_', '_', '_', '_', '_', '_'],
-   ['_', '_', '_', '_', '_', '_', '_', '_'],
-   ['_', '_', '_', '_', '_', '_', '_', '_'],
-   ['_', '_', '_', '_', '_', '_', '_', '_'],
-   ['_', '_', '_', '_', '_', '_', '_', '_'],
-   ['_', '_', '_', '_', '_', '_', '_', '_'],
-   ['_', '_', '_', '_', '_', '_', '_', '_'],
-   ['_', '_', '_', '_', '_', '_', '_', '_'],
-   ['_', '_', '_', '_', '_', '_', '_', '_'],
-  
-  ];
-
-   Board board = Board(grid);
-     List<Point> greenLine = board.checkConnections(
-    towerPosition: Point(rowIndex: 4, colIndex: 0), CellType: 'Y');
-    print(greenLine);
-    board.eraseAllCellTypeOutsideTheLineOfPoints(greenLine, 'Y');
-    print(board.board);
-  
-}
-*/

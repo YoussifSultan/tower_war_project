@@ -1,15 +1,18 @@
 import 'dart:async';
-import 'dart:math';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:tower_war/CommonUsed/Button_Tile.dart';
-import 'package:tower_war/CommonUsed/Constants.dart';
-import 'package:tower_war/CommonUsed/DataCellTile.dart';
-import 'package:tower_war/GameScreen/Board.dart';
-import 'package:tower_war/GameScreen/Tiles.dart';
+import 'package:tower_war/Classes/color_data.dart';
+import 'package:tower_war/CommonUsed/button_tile.dart';
+import 'package:tower_war/CommonUsed/constants.dart';
+import 'package:tower_war/CommonUsed/data_cell_tile.dart';
+import 'package:tower_war/GameScreen/game_variables.dart';
+import 'package:tower_war/GameScreen/tiles.dart';
+import 'package:tower_war/Classes/point.dart';
 import 'package:flutter_fortune_wheel/flutter_fortune_wheel.dart';
 import 'package:undo/undo.dart';
+import 'package:tower_war/GameScreen/board.dart';
 
 class GameScreen extends StatefulWidget {
   const GameScreen({super.key});
@@ -58,7 +61,7 @@ class _GameScreenState extends State<GameScreen> {
       ]
     ];
     /* *SECTION - fortune wheel */
-    ShowFortuneWheelToChooseWhichPlayerBeginsFirst();
+    showFortuneWheelToChooseWhichPlayerBeginsFirst();
     /* *!SECTION */
     GameVariables.historyController = SimpleStack<List<List<String>>>(
       Board.convertListRxStringToListString(GameVariables.grid),
@@ -87,69 +90,65 @@ class _GameScreenState extends State<GameScreen> {
         children: [
           /* *SECTION - Board */
           Container(
-            margin: EdgeInsets.only(left: 5, right: 5, top: 20),
+            margin: const EdgeInsets.only(left: 5, right: 5, top: 20),
             child: GridView.builder(
-              physics: BouncingScrollPhysics(),
+              physics: const BouncingScrollPhysics(),
               shrinkWrap: true,
-              gridDelegate:
-                  SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 8),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 8),
               itemBuilder: (_, index) {
                 if (index.remainder(8) == 0) rowCount++;
                 int columnCount = index - (rowCount * 8);
 
                 return CustomTile(
-                  CellData: GameVariables.grid[rowCount][columnCount],
-                  CellPosition:
-                      Point(rowIndex: rowCount, colIndex: columnCount),
-                );
+                    cellData: GameVariables.grid[rowCount][columnCount],
+                    position: Point(rowIndex: rowCount, colIndex: columnCount));
               },
               itemCount: 104,
             ),
           ),
 
           /* *!SECTION */
-          SizedBox(
+          const SizedBox(
             height: 20,
           ),
           /* *SECTION - Important Data */
-          Container(
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children: [
-                  Obx(() {
-                    return dataCardTile(
-                        width: 200,
-                        hintingText:
-                            'Remaining Warriors For ${GameVariables.activePlayers[GameVariables.currentPlayerIndex.value].colorData.name} Turn',
-                        DataText:
-                            '${GameVariables.turnRemainingTroops.value}'.obs);
-                  }),
-                  Obx(() {
-                    Point towerPosition = GameVariables
-                        .activePlayers[GameVariables.currentPlayerIndex.value]
-                        .towerPosition;
-                    int numberOfTroopsInTower = int.parse(GameVariables
-                        .grid[towerPosition.rowIndex][towerPosition.colIndex]
-                        .value
-                        .replaceAll(new RegExp(r'[^0-9]'), ''));
-                    return dataCardTile(
-                        width: 200,
-                        hintingText:
-                            'Warriors in ${GameVariables.activePlayers[GameVariables.currentPlayerIndex.value].colorData.name} Tower ',
-                        DataText: '${numberOfTroopsInTower}'.obs);
-                  }),
-                  dataCardTile(
-                      hintingText: 'hintingText', DataText: 'DataText'.obs),
-                  dataCardTile(
-                      hintingText: 'hintingText', DataText: 'DataText'.obs),
-                ],
-              ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                Obx(() {
+                  return DataCardTile(
+                      width: 200,
+                      hintingText:
+                          'Remaining Warriors For ${GameVariables.activePlayers[GameVariables.currentPlayerIndex.value].colorData.name} Turn',
+                      dataText:
+                          '${GameVariables.turnRemainingTroops.value}'.obs);
+                }),
+                Obx(() {
+                  Point towerPosition = GameVariables
+                      .activePlayers[GameVariables.currentPlayerIndex.value]
+                      .towerPosition;
+                  int numberOfTroopsInTower = int.parse(GameVariables
+                      .grid[towerPosition.rowIndex][towerPosition.colIndex]
+                      .value
+                      .replaceAll(RegExp(r'[^0-9]'), ''));
+                  return DataCardTile(
+                      width: 200,
+                      hintingText:
+                          'Warriors in ${GameVariables.activePlayers[GameVariables.currentPlayerIndex.value].colorData.name} Tower ',
+                      dataText: '$numberOfTroopsInTower'.obs);
+                }),
+                DataCardTile(
+                    hintingText: 'hintingText', dataText: 'DataText'.obs),
+                DataCardTile(
+                    hintingText: 'hintingText', dataText: 'DataText'.obs),
+              ],
             ),
           ),
           /* *!SECTION */
-          SizedBox(
+          const SizedBox(
             height: 20,
           ),
         ],
@@ -167,7 +166,7 @@ class _GameScreenState extends State<GameScreen> {
 
                   GameVariables.historyController.undo();
                 },
-                ForegroundIcon: Icons.undo_rounded),
+                foregroundIcon: Icons.undo_rounded),
             /* *!SECTION */
             /* *SECTION - end Turn Button */
             IconTile(
@@ -189,12 +188,12 @@ class _GameScreenState extends State<GameScreen> {
                   String cellData = GameVariables
                       .grid[towerPosition.rowIndex][towerPosition.colIndex]
                       .string
-                      .replaceAll(new RegExp(r"[0-9]+"), "");
+                      .replaceAll(RegExp(r"[0-9]+"), "");
 
                   int numberOfTroopsInTower = int.parse(GameVariables
                       .grid[towerPosition.rowIndex][towerPosition.colIndex]
                       .value
-                      .replaceAll(new RegExp(r'[^0-9]'), ''));
+                      .replaceAll(RegExp(r'[^0-9]'), ''));
                   /* *SECTION - if the tower doesn't have enough troops */
                   while (numberOfTroopsInTower - 5 < 1) {
                     if (GameVariables.activePlayers[
@@ -217,7 +216,7 @@ class _GameScreenState extends State<GameScreen> {
                             .colorCode);
                     GameVariables.grid[towerPosition.rowIndex]
                             [towerPosition.colIndex](
-                        'TC${GameVariables.availableColors.firstWhere((colorData) => cellData.contains(colorData.colorCode)).colorCode}');
+                        'D${Colordata.availableColors.firstWhere((colorData) => cellData.contains(colorData.colorCode)).colorCode}');
                     GameVariables.activePlayers.remove(
                         GameVariables.activePlayers.firstWhere((player) =>
                             cellData.contains(player.colorData.colorCode)));
@@ -227,23 +226,23 @@ class _GameScreenState extends State<GameScreen> {
                     cellData = GameVariables
                         .grid[towerPosition.rowIndex][towerPosition.colIndex]
                         .string
-                        .replaceAll(new RegExp(r"[0-9]+"), "");
+                        .replaceAll(RegExp(r"[0-9]+"), "");
 
                     numberOfTroopsInTower = int.parse(GameVariables
                         .grid[towerPosition.rowIndex][towerPosition.colIndex]
                         .value
-                        .replaceAll(new RegExp(r'[^0-9]'), ''));
+                        .replaceAll(RegExp(r'[^0-9]'), ''));
                   }
                   /* *!SECTION */
                   GameVariables.grid[towerPosition.rowIndex]
                           [towerPosition.colIndex](
-                      cellData + '${(numberOfTroopsInTower - 5)}');
+                      '$cellData${(numberOfTroopsInTower - 5)}');
                   GameVariables.turnRemainingTroops(5);
                   /* *!SECTION */
                   setState(() {});
                   GameVariables.historyController.clearHistory();
                 },
-                ForegroundIcon: Icons.done_all_outlined),
+                foregroundIcon: Icons.done_all_outlined),
             /* *!SECTION */
           ],
         ),
@@ -253,12 +252,12 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
-  void ShowFortuneWheelToChooseWhichPlayerBeginsFirst() {
+  void showFortuneWheelToChooseWhichPlayerBeginsFirst() {
     /* *SECTION - fortune wheel */
     Future.delayed(
       Durations.long4,
       () {
-        GameVariables.currentPlayerIndex(Random().nextInt(3));
+        GameVariables.currentPlayerIndex(math.Random().nextInt(3));
 
         fortuneWheelController.add(GameVariables.currentPlayerIndex.value);
         Get.dialog(Container(
@@ -278,14 +277,14 @@ class _GameScreenState extends State<GameScreen> {
                     .towerPosition;
                 String cellData = GameVariables
                     .grid[towerPosition.rowIndex][towerPosition.colIndex].string
-                    .replaceAll(new RegExp(r"[0-9]+"), "");
+                    .replaceAll(RegExp(r"[0-9]+"), "");
 
                 int numberOfTroopsInTower = int.parse(GameVariables
                     .grid[towerPosition.rowIndex][towerPosition.colIndex].value
-                    .replaceAll(new RegExp(r'[^0-9]'), ''));
+                    .replaceAll(RegExp(r'[^0-9]'), ''));
                 GameVariables.grid[towerPosition.rowIndex]
                         [towerPosition.colIndex](
-                    cellData + '${(numberOfTroopsInTower - 5)}');
+                    '$cellData${(numberOfTroopsInTower - 5)}');
                 GameVariables.turnRemainingTroops(5);
                 /* *!SECTION */
                 setState(() {});

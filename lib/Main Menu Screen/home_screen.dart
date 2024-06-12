@@ -2,9 +2,9 @@ import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:rive/rive.dart';
-import 'package:tower_war/CommonUsed/Button_Tile.dart';
-import 'package:tower_war/CommonUsed/Constants.dart';
-import 'package:tower_war/CommonUsed/PageOptions.dart';
+import 'package:tower_war/CommonUsed/button_tile.dart';
+import 'package:tower_war/CommonUsed/constants.dart';
+import 'package:tower_war/CommonUsed/page_options.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,18 +33,18 @@ class _HomeScreenState extends State<HomeScreen> {
     Constants.screenWidth = MediaQuery.of(context).size.width;
     Constants.screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
-      backgroundColor: Color.fromRGBO(76, 179, 212, 1),
+      backgroundColor: const Color.fromRGBO(76, 179, 212, 1),
       body: Stack(
         children: [
-          Container(
+          SizedBox(
               width: Constants.screenWidth,
               height: Constants.screenHeight,
-              child: RiveAnimation.asset(
+              child: const RiveAnimation.asset(
                 'assets/animations/pagetransition.riv',
               )),
           Align(
             alignment: Alignment.bottomCenter,
-            child: Container(
+            child: SizedBox(
               width: Constants.screenWidth * 0.5,
               height: Constants.screenHeight * 0.5,
               child: Column(
@@ -54,13 +54,13 @@ class _HomeScreenState extends State<HomeScreen> {
                   ButtonTile(
                     text: 'Play',
                     onTap: () {
-                      Get.toNamed(PageNames.GameOptionsDialog);
+                      Get.toNamed(PageNames.gameOptionsDialog);
                     },
                   ),
                   ButtonTile(
                     text: 'Settings',
                     onTap: () {
-                      Get.toNamed(PageNames.SettingsPage);
+                      Get.toNamed(PageNames.settingsPage);
                     },
                   ),
                   ButtonTile(

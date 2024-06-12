@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rive/rive.dart';
-import 'package:tower_war/CommonUsed/Button_Tile.dart';
-import 'package:tower_war/CommonUsed/Constants.dart';
-import 'package:tower_war/CommonUsed/PageOptions.dart';
+import 'package:tower_war/CommonUsed/button_tile.dart';
+import 'package:tower_war/CommonUsed/constants.dart';
+import 'package:tower_war/CommonUsed/page_options.dart';
 
 class GameOptionsDialog extends StatefulWidget {
   const GameOptionsDialog({super.key});
@@ -19,16 +19,17 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
   RxString yellowTowerPlayerName = 'yellow Tower'.obs;
   RxString greenTowerPlayerName = 'green Tower'.obs;
   /* *SECTION - Num of Players Selector Rive */
-  SMINumber? SelectedNumberOfPlayersRiveAnimation;
+  SMINumber? selectedNumberOfPlayersRiveAnimation;
   void _onNumOfPlayersSelectorRiveInit(Artboard artboard) {
     final controller =
         StateMachineController.fromArtboard(artboard, 'StateManager');
     artboard.addController(controller!);
-    SelectedNumberOfPlayersRiveAnimation =
+    selectedNumberOfPlayersRiveAnimation =
         controller.findInput<double>('NumOfPlayers') as SMINumber;
-    controller.onInputValueChange = (InputID, ValueOfInput) {
-      if (InputID == 1689)
-        selectedNumberOfPlayers(double.parse(ValueOfInput.toString()).round());
+    controller.onInputValueChange = (inputID, valueOfInput) {
+      if (inputID == 1689) {
+        selectedNumberOfPlayers(double.parse(valueOfInput.toString()).round());
+      }
     };
   }
 
@@ -40,23 +41,23 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
       appBar: AppBar(),
       body: SafeArea(
         child: Container(
-          padding: EdgeInsets.only(top: 30, left: 20),
+          padding: const EdgeInsets.only(top: 30, left: 20),
           child: ListView(
             children: [
               /* *SECTION - Number Of Players Selector */
               Obx(
                 () => Text(
                   'Number Of Players : ${selectedNumberOfPlayers.value == 0 ? '' : selectedNumberOfPlayers.value}',
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 20,
                       fontWeight: FontWeight.w500,
                       color: Colors.black),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
-              Container(
+              SizedBox(
                 width: Constants.screenWidth,
                 height: 75,
                 child: RiveAnimation.asset(
@@ -66,14 +67,14 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                 ),
               ),
               /* *!SECTION */
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
               /* *SECTION - Enter Player Names */
               Obx(
                 () => Visibility(
                     visible: selectedNumberOfPlayers.value != 0,
-                    child: Text(
+                    child: const Text(
                       'Enter Player Name :',
                       style: TextStyle(
                           fontSize: 20,
@@ -83,38 +84,41 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
               ),
               Obx(() => Center(
                     child: Container(
-                      padding: EdgeInsets.only(left: 20, right: 40),
+                      padding: const EdgeInsets.only(left: 20, right: 40),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          SizedBox(
+                          const SizedBox(
                             height: 20,
                           ),
                           Visibility(
                             visible: selectedNumberOfPlayers.value >= 2,
                             child: EnterPlayerNameContainer(
-                                towerColor: Color.fromRGBO(240, 73, 79, 1),
+                                towerColor:
+                                    const Color.fromRGBO(240, 73, 79, 1),
                                 towerColorName: 'Red',
                                 playerName: redTowerPlayerName),
                           ),
                           Visibility(
                             visible: selectedNumberOfPlayers.value >= 2,
                             child: EnterPlayerNameContainer(
-                                towerColor: Color.fromRGBO(76, 179, 212, 1),
+                                towerColor:
+                                    const Color.fromRGBO(76, 179, 212, 1),
                                 towerColorName: 'Blue',
                                 playerName: blueTowerPlayerName),
                           ),
                           Visibility(
                             visible: selectedNumberOfPlayers.value > 2,
                             child: EnterPlayerNameContainer(
-                                towerColor: Color.fromRGBO(211, 183, 120, 1),
+                                towerColor:
+                                    const Color.fromRGBO(211, 183, 120, 1),
                                 towerColorName: 'Yellow',
                                 playerName: yellowTowerPlayerName),
                           ),
                           Visibility(
                             visible: selectedNumberOfPlayers.value == 4,
                             child: EnterPlayerNameContainer(
-                                towerColor: Color.fromRGBO(37, 68, 65, 1),
+                                towerColor: const Color.fromRGBO(37, 68, 65, 1),
                                 towerColorName: 'Green',
                                 playerName: greenTowerPlayerName),
                           ),
@@ -123,7 +127,7 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                     ),
                   )),
               /* *!SECTION */
-              SizedBox(
+              const SizedBox(
                 height: 50,
               ),
               /* *SECTION - Start Game Button */
@@ -131,11 +135,11 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                 () => Visibility(
                   visible: selectedNumberOfPlayers.value != 0,
                   child: Container(
-                      padding: EdgeInsets.only(left: 10, right: 30),
+                      padding: const EdgeInsets.only(left: 10, right: 30),
                       child: ButtonTile(
                           text: 'Start Game',
                           onTap: () {
-                            Get.offAndToNamed(PageNames.GamePage);
+                            Get.offAndToNamed(PageNames.gamePage);
                           })),
                 ),
               )
@@ -182,7 +186,7 @@ class EnterPlayerNameContainer extends StatelessWidget {
         ));
       },
       child: Container(
-        margin: EdgeInsets.only(bottom: 15),
+        margin: const EdgeInsets.only(bottom: 15),
         height: 50,
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(20), color: towerColor),
@@ -190,7 +194,8 @@ class EnterPlayerNameContainer extends StatelessWidget {
           child: Obx(
             () => Text(
               playerName.value,
-              style: TextStyle(fontFamily: 'PixelText', color: Colors.white),
+              style:
+                  const TextStyle(fontFamily: 'PixelText', color: Colors.white),
             ),
           ),
         ),

@@ -1,52 +1,58 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rive/rive.dart';
-import 'package:tower_war/Classes/colorData.dart';
-import 'package:tower_war/CommonUsed/Enums.dart';
-import 'package:tower_war/GameScreen/Board.dart';
+import 'package:tower_war/Classes/tile_data.dart';
+import 'package:tower_war/Classes/color_data.dart';
+import 'package:tower_war/GameScreen/board.dart';
+import 'package:tower_war/Classes/point.dart';
+import 'package:tower_war/GameScreen/game_variables.dart';
 
 class CustomTile extends StatelessWidget {
-  const CustomTile(
-      {super.key, required this.CellData, required this.CellPosition});
+  const CustomTile({super.key, required this.cellData, required this.position});
 
-  final RxString CellData;
-  final Point CellPosition;
-
+  final RxString cellData;
+  final Point position;
   @override
   Widget build(BuildContext context) {
     return Obx(() {
-      TileStatus cellStatus =
-          Convertions.GetCellStatusFromCellData(CellData.value);
-      Colordata teamColor = GameVariables.availableColors.firstWhere(
-          (color) => CellData.value.contains(color.colorCode),
-          orElse: () => GameVariables.availableColors[0]);
-      if (cellStatus == TileStatus.TowerTile) {
+      TileData tileData = TileData(
+          tilePosition: position,
+          tiletypecode: TileData.availableTileTypes.firstWhere((code) {
+            return cellData.value.contains(code);
+          }),
+          colordata: Colordata.availableColors.firstWhere(
+              (color) => cellData.value.contains(color.colorCode),
+              orElse: () => Colordata.availableColors[0]),
+          numberOfTroops:
+              int.parse(cellData.value.replaceAll(RegExp(r'[^0-9]'), '')));
+
+      if (tileData.tiletypecode == "T") {
         int numberOfTroopsInTower =
-            int.parse(CellData.value.replaceAll(new RegExp(r'[^0-9]'), ''));
+            int.parse(cellData.value.replaceAll(RegExp(r'[^0-9]'), ''));
 
         return TowerTile(
-            teamColor: teamColor,
+            teamColor: tileData.colordata,
             numOfTroopsInTower: numberOfTroopsInTower.obs,
-            cellPosition: CellPosition);
-      } else if (cellStatus == TileStatus.TroopsTile) {
+            cellPosition: tileData.tilePosition);
+      } else if (tileData.tiletypecode == "W") {
         int numberOfTroopsInCell =
-            int.parse(CellData.value.replaceAll(new RegExp(r'[^0-9]'), ''));
+            int.parse(cellData.value.replaceAll(RegExp(r'[^0-9]'), ''));
         return TroopsTile(
-          teamColor: teamColor,
+          teamColor: tileData.colordata,
           numberOfTroops: numberOfTroopsInCell.obs,
-          cellPosition: CellPosition,
+          cellPosition: tileData.tilePosition,
         );
-      } else if (cellStatus == TileStatus.deadTroopsTile) {
+      } else if (tileData.tiletypecode == ".") {
         int numberOfDeadTroopsInCell =
-            int.parse(CellData.value.replaceAll(new RegExp(r'[^0-9]'), ''));
+            int.parse(cellData.value.replaceAll(RegExp(r'[^0-9]'), ''));
         return DeadTroopsTile(
             numberOfTroops: numberOfDeadTroopsInCell.obs,
-            cellPosition: CellPosition);
-      } else if (cellStatus == TileStatus.BrokenTowerTile) {
+            cellPosition: tileData.tilePosition);
+      } else if (tileData.tiletypecode == "D") {
         return BrokenTowerTile(
-            teamColor: teamColor, cellPosition: CellPosition);
+            teamColor: tileData.colordata, cellPosition: tileData.tilePosition);
       } else {
-        return BlankTile(cellPosition: CellPosition);
+        return BlankTile(cellPosition: tileData.tilePosition);
       }
     });
   }
@@ -71,19 +77,19 @@ class TowerTile extends StatelessWidget {
         }
         String cellData = GameVariables
             .grid[cellPosition.rowIndex][cellPosition.colIndex].string;
-        cellData = cellData.replaceAll(new RegExp(r"[0-9]+"), "");
+        cellData = cellData.replaceAll(RegExp(r"[0-9]+"), "");
         if (teamColor !=
             GameVariables.activePlayers[GameVariables.currentPlayerIndex.value]
                 .colorData) {
           GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
-              cellData + '${(numOfTroopsInTower.value - 2)}');
+              '$cellData${(numOfTroopsInTower.value - 2)}');
           GameVariables.turnRemainingTroops(
               GameVariables.turnRemainingTroops.value - 1);
           if (numOfTroopsInTower.value < 1) {
             GameVariables.activePlayers[GameVariables.currentPlayerIndex.value]
                 .linePositions = [];
             GameVariables.grid[cellPosition.rowIndex]
-                [cellPosition.colIndex]('TC${teamColor.colorCode}');
+                [cellPosition.colIndex]('D${teamColor.colorCode}');
             GameVariables.activePlayers.remove(GameVariables
                 .activePlayers[GameVariables.currentPlayerIndex.value]);
           }
@@ -93,7 +99,7 @@ class TowerTile extends StatelessWidget {
       child: Container(
           clipBehavior: Clip.hardEdge,
           alignment: Alignment.center,
-          margin: EdgeInsets.all(1),
+          margin: const EdgeInsets.all(1),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
             color: Colors.white,
@@ -107,14 +113,14 @@ class TowerTile extends StatelessWidget {
                 alignment: Alignment.bottomRight,
                 child: Container(
                   decoration: BoxDecoration(
-                    borderRadius: BorderRadius.only(
+                    borderRadius: const BorderRadius.only(
                       topLeft: Radius.circular(10),
                     ),
                     color: Colors.black.withOpacity(0.5),
                   ),
                   child: Text(
                     numOfTroopsInTower.string,
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               )
@@ -135,14 +141,14 @@ class BrokenTowerTile extends StatelessWidget {
     return Container(
       clipBehavior: Clip.hardEdge,
       alignment: Alignment.center,
-      margin: EdgeInsets.all(1),
+      margin: const EdgeInsets.all(1),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(5),
         color: Colors.white,
       ),
       child: RiveAnimation.asset(
         'assets/animations/broken_towers/${teamColor.name}brokentower.riv',
-        stateMachines: ['State Machine 1'],
+        stateMachines: const ['State Machine 1'],
       ),
     );
   }
@@ -167,16 +173,16 @@ class TroopsTile extends StatelessWidget {
         }
         String cellData = GameVariables
             .grid[cellPosition.rowIndex][cellPosition.colIndex].string
-            .replaceAll(new RegExp(r"[0-9]+"), "");
+            .replaceAll(RegExp(r"[0-9]+"), "");
 
         if (teamColor ==
             GameVariables.activePlayers[GameVariables.currentPlayerIndex.value]
                 .colorData) {
           GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
-              cellData + '${(numberOfTroops!.value + 1)}');
+              '$cellData${(numberOfTroops!.value + 1)}');
         } else {
           GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
-              cellData + '${(numberOfTroops!.value - 1)}');
+              '$cellData${(numberOfTroops!.value - 1)}');
           if (numberOfTroops!.value == 1) {
             GameVariables.grid[cellPosition.rowIndex]
                 [cellPosition.colIndex]("_");
@@ -190,7 +196,7 @@ class TroopsTile extends StatelessWidget {
       child: Container(
           alignment: Alignment.center,
           clipBehavior: Clip.hardEdge,
-          margin: EdgeInsets.all(1),
+          margin: const EdgeInsets.all(1),
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),
             color: Colors.white,
@@ -200,18 +206,18 @@ class TroopsTile extends StatelessWidget {
               RiveAnimation.asset(
                   'assets/animations/warriors/${teamColor.name}warrior.riv'),
               numberOfTroops!.value == 1
-                  ? SizedBox()
+                  ? const SizedBox()
                   : Align(
                       alignment: Alignment.bottomRight,
                       child: Container(
                         decoration: BoxDecoration(
                             color: Colors.black.withOpacity(0.5),
-                            borderRadius: BorderRadius.only(
+                            borderRadius: const BorderRadius.only(
                               topLeft: Radius.circular(10),
                             )),
                         child: Text(
                           numberOfTroops!.string,
-                          style: TextStyle(color: Colors.white),
+                          style: const TextStyle(color: Colors.white),
                         ),
                       ),
                     )
@@ -239,9 +245,9 @@ class DeadTroopsTile extends StatelessWidget {
           }
           String cellData = GameVariables
               .grid[cellPosition.rowIndex][cellPosition.colIndex].string;
-          String celltype = cellData.replaceAll(new RegExp(r"[0-9]+"), "");
+          String celltype = cellData.replaceAll(RegExp(r"[0-9]+"), "");
           GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
-              celltype + '${(numberOfTroops!.value - 1)}');
+              '$celltype${(numberOfTroops!.value - 1)}');
           if (numberOfTroops!.value == 1) {
             GameVariables.grid[cellPosition.rowIndex]
                 [cellPosition.colIndex]("_");
@@ -254,24 +260,25 @@ class DeadTroopsTile extends StatelessWidget {
         child: Container(
             alignment: Alignment.center,
             clipBehavior: Clip.hardEdge,
-            margin: EdgeInsets.all(1),
+            margin: const EdgeInsets.all(1),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(5),
               color: Colors.white,
             ),
             child: Stack(children: [
-              RiveAnimation.asset('assets/animations/warriors/deadwarrior.riv'),
+              const RiveAnimation.asset(
+                  'assets/animations/warriors/deadwarrior.riv'),
               Align(
                 alignment: Alignment.bottomRight,
                 child: Container(
                   decoration: BoxDecoration(
                       color: Colors.black.withOpacity(0.5),
-                      borderRadius: BorderRadius.only(
+                      borderRadius: const BorderRadius.only(
                         topLeft: Radius.circular(10),
                       )),
                   child: Text(
                     numberOfTroops!.string,
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                   ),
                 ),
               )
@@ -308,7 +315,7 @@ class BlankTile extends StatelessWidget {
         },
         child: Container(
           alignment: Alignment.center,
-          margin: EdgeInsets.all(1),
+          margin: const EdgeInsets.all(1),
           clipBehavior: Clip.hardEdge,
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(5),

@@ -23,20 +23,20 @@ class _ButtonTileState extends State<ButtonTile> {
         () => Container(
           width: 200,
           height: 50,
-          margin: EdgeInsets.only(bottom: 20),
+          margin: const EdgeInsets.only(bottom: 20),
           decoration: BoxDecoration(
             boxShadow: isClicking.value
                 ? []
                 : [
-                    BoxShadow(
+                    const BoxShadow(
                       blurRadius: 10,
                       offset: Offset(7, 7),
                     )
                   ],
             borderRadius: BorderRadius.circular(20),
             color: isClicking.value
-                ? Color.fromRGBO(240, 73, 79, 1)
-                : Color.fromRGBO(37, 68, 65, 1),
+                ? const Color.fromRGBO(240, 73, 79, 1)
+                : const Color.fromRGBO(37, 68, 65, 1),
           ),
           child: Center(
             child: Text(
@@ -45,8 +45,8 @@ class _ButtonTileState extends State<ButtonTile> {
                   fontFamily: 'PixelText',
                   fontSize: 20,
                   color: isClicking.value
-                      ? Color.fromRGBO(37, 68, 65, 1)
-                      : Color.fromRGBO(240, 73, 79, 1)),
+                      ? const Color.fromRGBO(37, 68, 65, 1)
+                      : const Color.fromRGBO(240, 73, 79, 1)),
             ),
           ),
         ),
@@ -57,8 +57,8 @@ class _ButtonTileState extends State<ButtonTile> {
 
 class IconTile extends StatefulWidget {
   const IconTile(
-      {super.key, required this.onTap, required this.ForegroundIcon});
-  final IconData ForegroundIcon;
+      {super.key, required this.onTap, required this.foregroundIcon});
+  final IconData foregroundIcon;
   final Function onTap;
   @override
   State<IconTile> createState() => _IconTileState();
@@ -77,30 +77,30 @@ class _IconTileState extends State<IconTile> {
       child: Obx(
         () => Container(
             width: 100,
-            margin: EdgeInsets.symmetric(horizontal: 5),
+            margin: const EdgeInsets.symmetric(horizontal: 5),
             clipBehavior: Clip.hardEdge,
             height: 50,
             decoration: BoxDecoration(
               boxShadow: isClicking.value
                   ? []
                   : [
-                      BoxShadow(
+                      const BoxShadow(
                         blurRadius: 10,
                         offset: Offset(7, 7),
                       )
                     ],
               borderRadius: BorderRadius.circular(50),
               color: isClicking.value
-                  ? Color.fromRGBO(173, 155, 170, 1)
+                  ? const Color.fromRGBO(173, 155, 170, 1)
                   : Colors.white,
             ),
             child: Center(
               child: Icon(
-                widget.ForegroundIcon,
+                widget.foregroundIcon,
                 size: 40,
                 color: isClicking.value
                     ? Colors.white
-                    : Color.fromRGBO(173, 155, 170, 1),
+                    : const Color.fromRGBO(173, 155, 170, 1),
               ),
             )),
       ),

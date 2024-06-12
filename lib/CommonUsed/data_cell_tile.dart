@@ -1,21 +1,21 @@
 import 'package:flutter/material.dart';
 import 'package:get/get_rx/src/rx_types/rx_types.dart';
 
-class dataCardTile extends StatelessWidget {
-  const dataCardTile({
+class DataCardTile extends StatelessWidget {
+  const DataCardTile({
     super.key,
     required this.hintingText,
-    required this.DataText,
+    required this.dataText,
     this.width = 150,
   });
   final String hintingText;
   final double width;
-  final RxString DataText;
+  final RxString dataText;
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: EdgeInsets.all(8),
-      padding: EdgeInsets.all(5),
+      margin: const EdgeInsets.all(8),
+      padding: const EdgeInsets.all(5),
       width: width,
       height: 100,
       decoration: BoxDecoration(
@@ -25,8 +25,8 @@ class dataCardTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           Text(
-            DataText.value,
-            style: TextStyle(
+            dataText.value,
+            style: const TextStyle(
                 fontFamily: 'PixelText', fontSize: 20, color: Colors.black),
           ),
           Text(
