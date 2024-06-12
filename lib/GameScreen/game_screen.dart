@@ -244,6 +244,18 @@ class _GameScreenState extends State<GameScreen> {
                 },
                 foregroundIcon: Icons.done_all_outlined),
             /* *!SECTION */
+            /* *SECTION - take all troops Button */
+            IconTile(
+                onTap: () {
+                  GameVariables.isCellSelectionModeSelected(true);
+                  Get.rawSnackbar(
+                      messageText: const Text(
+                    'Please Select a Tile to withdraw troops',
+                    style: TextStyle(color: Colors.white),
+                  ));
+                },
+                foregroundIcon: Icons.pivot_table_chart_outlined),
+            /* *!SECTION */
           ],
         ),
       ),

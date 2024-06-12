@@ -29,6 +29,7 @@ class GameVariables {
   ];
 
   static late SimpleStack<List<List<String>>> historyController;
+  static RxBool isCellSelectionModeSelected = false.obs;
   static RxInt turnRemainingTroops = 0.obs;
 
   static List<List<RxString>> grid = [];

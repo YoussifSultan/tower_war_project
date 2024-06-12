@@ -1,5 +1,3 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rive/rive.dart';
@@ -153,7 +151,18 @@ class TroopsTile extends StatelessWidget {
         if (!Board.isCellValidToAddWarriors(tileData.tilePosition)) {
           return;
         }
-
+        /* *SECTION - taking all troops from a the tile */
+        if (GameVariables.isCellSelectionModeSelected.value) {
+          GameVariables.turnRemainingTroops(
+              GameVariables.turnRemainingTroops.value +
+                  (tileData.numberOfTroops - 1));
+          GameVariables.grid[tileData.tilePosition.rowIndex]
+                  [tileData.tilePosition.colIndex](
+              '${tileData.tiletypecode + tileData.colordata.colorCode}1');
+          GameVariables.isCellSelectionModeSelected(false);
+          return;
+        }
+        /* *!SECTION */
         if (tileData.colordata ==
             GameVariables.activePlayers[GameVariables.currentPlayerIndex.value]
                 .colorData) {
