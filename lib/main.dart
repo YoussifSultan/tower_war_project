@@ -10,7 +10,7 @@ import 'package:tower_war/Settings_screen/settings_screen.dart';
 
 void main() {
   runApp(GetMaterialApp(
-    initialRoute: PageNames.gamePage,
+    initialRoute: PageNames.homePage,
     getPages: [
       GetPage(
           name: PageNames.gameOptionsDialog,

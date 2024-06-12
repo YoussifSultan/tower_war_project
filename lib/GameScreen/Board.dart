@@ -225,14 +225,14 @@ class Board {
 
     /* *!SECTION */
     /* *SECTION - Check if there is enough warriors */
-    // if (GameVariables.turnRemainingTroops.value == 0) {
-    //   Get.rawSnackbar(
-    //       messageText: Text(
-    //     'There is no warriors left',
-    //     style: TextStyle(color: Colors.white),
-    //   ));
-    //   return false;
-    // }
+    if (GameVariables.turnRemainingTroops.value == 0) {
+      Get.rawSnackbar(
+          messageText: const Text(
+        'There is no warriors left',
+        style: TextStyle(color: Colors.white),
+      ));
+      return false;
+    }
     /* *!SECTION */
     return true;
   }

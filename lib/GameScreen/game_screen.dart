@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
@@ -26,17 +27,24 @@ class _GameScreenState extends State<GameScreen> {
   bool isUndoFunctionActivated = false;
 
   @override
+  void dispose() {
+    GameVariables.activePlayers = [];
+    GameVariables.currentPlayerIndex = 0.obs;
+    super.dispose();
+  }
+
+  @override
   void initState() {
     GameVariables.grid = [
       [
-        'TR20'.obs,
+        'TR100'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
-        'TB20'.obs
+        'TB100'.obs
       ],
       ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
       ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
@@ -50,14 +58,14 @@ class _GameScreenState extends State<GameScreen> {
       ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
       ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
       [
-        GameVariables.activePlayers.length == 4 ? 'TG20'.obs : '_'.obs,
+        GameVariables.activePlayers.length == 4 ? 'TG100'.obs : '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
-        GameVariables.activePlayers.length >= 3 ? 'TY20'.obs : '_'.obs
+        GameVariables.activePlayers.length >= 3 ? 'TY100'.obs : '_'.obs
       ]
     ];
     /* *SECTION - fortune wheel */
@@ -140,10 +148,6 @@ class _GameScreenState extends State<GameScreen> {
                           'Warriors in ${GameVariables.activePlayers[GameVariables.currentPlayerIndex.value].colorData.name} Tower ',
                       dataText: '$numberOfTroopsInTower'.obs);
                 }),
-                DataCardTile(
-                    hintingText: 'hintingText', dataText: 'DataText'.obs),
-                DataCardTile(
-                    hintingText: 'hintingText', dataText: 'DataText'.obs),
               ],
             ),
           ),

@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rive/rive.dart';
+import 'package:tower_war/Classes/color_data.dart';
+import 'package:tower_war/Classes/player.dart';
+import 'package:tower_war/Classes/point.dart';
 import 'package:tower_war/CommonUsed/button_tile.dart';
 import 'package:tower_war/CommonUsed/constants.dart';
 import 'package:tower_war/CommonUsed/page_options.dart';
+import 'package:tower_war/GameScreen/game_variables.dart';
 
 class GameOptionsDialog extends StatefulWidget {
   const GameOptionsDialog({super.key});
@@ -139,6 +143,51 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                       child: ButtonTile(
                           text: 'Start Game',
                           onTap: () {
+                            GameVariables.activePlayers = [
+                              Player(
+                                  name: redTowerPlayerName.string,
+                                  linePositions: [
+                                    Point(rowIndex: 0, colIndex: 0)
+                                  ],
+                                  colorData: Colordata.availableColors
+                                      .firstWhere(
+                                          (color) => color.colorCode == 'R'),
+                                  towerPosition:
+                                      Point(rowIndex: 0, colIndex: 0)),
+                              Player(
+                                name: blueTowerPlayerName.string,
+                                linePositions: [
+                                  Point(rowIndex: 0, colIndex: 7)
+                                ],
+                                colorData: Colordata.availableColors.firstWhere(
+                                    (color) => color.colorCode == 'B'),
+                                towerPosition: Point(rowIndex: 0, colIndex: 7),
+                              ),
+                            ];
+                            if (selectedNumberOfPlayers.value >= 3) {
+                              GameVariables.activePlayers.add(Player(
+                                  name: 'Khalil',
+                                  linePositions: [
+                                    Point(rowIndex: 12, colIndex: 7)
+                                  ],
+                                  colorData: Colordata.availableColors
+                                      .firstWhere(
+                                          (color) => color.colorCode == 'Y'),
+                                  towerPosition:
+                                      Point(rowIndex: 12, colIndex: 7)));
+                            }
+                            if (selectedNumberOfPlayers.value == 4) {
+                              GameVariables.activePlayers.add(Player(
+                                  name: 'Sultan',
+                                  linePositions: [
+                                    Point(rowIndex: 0, colIndex: 7)
+                                  ],
+                                  colorData: Colordata.availableColors
+                                      .firstWhere(
+                                          (color) => color.colorCode == 'G'),
+                                  towerPosition:
+                                      Point(rowIndex: 0, colIndex: 7)));
+                            }
                             Get.offAndToNamed(PageNames.gamePage);
                           })),
                 ),
