@@ -7,7 +7,7 @@
         {
             "name": "tower_war_project",
             "request": "launch",
-            "type": "dart"
+            "type": "dart",
         },
         {
             "name": "tower_war_project (profile mode)",

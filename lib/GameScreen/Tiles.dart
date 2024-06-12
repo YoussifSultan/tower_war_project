@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rive/rive.dart';
@@ -14,7 +16,13 @@ class CustomTile extends StatelessWidget {
   final Point position;
   @override
   Widget build(BuildContext context) {
+    int numberOfTroops = 0;
     return Obx(() {
+      if (int.tryParse(cellData.value.replaceAll(RegExp(r'[^0-9]'), '')) !=
+          null) {
+        numberOfTroops =
+            int.parse(cellData.value.replaceAll(RegExp(r'[^0-9]'), ''));
+      }
       TileData tileData = TileData(
           tilePosition: position,
           tiletypecode: TileData.availableTileTypes.firstWhere((code) {
@@ -23,75 +31,54 @@ class CustomTile extends StatelessWidget {
           colordata: Colordata.availableColors.firstWhere(
               (color) => cellData.value.contains(color.colorCode),
               orElse: () => Colordata.availableColors[0]),
-          numberOfTroops:
-              int.parse(cellData.value.replaceAll(RegExp(r'[^0-9]'), '')));
-
+          numberOfTroops: numberOfTroops);
       if (tileData.tiletypecode == "T") {
-        int numberOfTroopsInTower =
-            int.parse(cellData.value.replaceAll(RegExp(r'[^0-9]'), ''));
-
         return TowerTile(
-            teamColor: tileData.colordata,
-            numOfTroopsInTower: numberOfTroopsInTower.obs,
-            cellPosition: tileData.tilePosition);
-      } else if (tileData.tiletypecode == "W") {
-        int numberOfTroopsInCell =
-            int.parse(cellData.value.replaceAll(RegExp(r'[^0-9]'), ''));
-        return TroopsTile(
-          teamColor: tileData.colordata,
-          numberOfTroops: numberOfTroopsInCell.obs,
-          cellPosition: tileData.tilePosition,
+          tileData: tileData,
         );
+      } else if (tileData.tiletypecode == "W") {
+        return TroopsTile(tileData: tileData);
       } else if (tileData.tiletypecode == ".") {
-        int numberOfDeadTroopsInCell =
-            int.parse(cellData.value.replaceAll(RegExp(r'[^0-9]'), ''));
-        return DeadTroopsTile(
-            numberOfTroops: numberOfDeadTroopsInCell.obs,
-            cellPosition: tileData.tilePosition);
+        return DeadTroopsTile(tileData: tileData);
       } else if (tileData.tiletypecode == "D") {
-        return BrokenTowerTile(
-            teamColor: tileData.colordata, cellPosition: tileData.tilePosition);
+        return BrokenTowerTile(tileData: tileData);
       } else {
-        return BlankTile(cellPosition: tileData.tilePosition);
+        return BlankTile(tileData: tileData);
       }
     });
   }
 }
 
 class TowerTile extends StatelessWidget {
-  const TowerTile(
-      {super.key,
-      required this.teamColor,
-      required this.numOfTroopsInTower,
-      required this.cellPosition});
-  final Colordata teamColor;
-  final Point cellPosition;
-
-  final RxInt numOfTroopsInTower;
+  const TowerTile({
+    super.key,
+    required this.tileData,
+  });
+  final TileData tileData;
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (!Board.isCellValidToAddWarriors(cellPosition)) {
+        if (!Board.isCellValidToAddWarriors(tileData.tilePosition)) {
           return;
         }
-        String cellData = GameVariables
-            .grid[cellPosition.rowIndex][cellPosition.colIndex].string;
-        cellData = cellData.replaceAll(RegExp(r"[0-9]+"), "");
-        if (teamColor !=
+
+        if (tileData.colordata !=
             GameVariables.activePlayers[GameVariables.currentPlayerIndex.value]
                 .colorData) {
-          GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
-              '$cellData${(numOfTroopsInTower.value - 2)}');
+          GameVariables.grid[tileData.tilePosition.rowIndex]
+                  [tileData.tilePosition.colIndex](
+              '${tileData.tiletypecode + tileData.colordata.colorCode}${(tileData.numberOfTroops - 2)}');
           GameVariables.turnRemainingTroops(
               GameVariables.turnRemainingTroops.value - 1);
-          if (numOfTroopsInTower.value < 1) {
+          if (tileData.numberOfTroops < 1) {
             GameVariables.activePlayers[GameVariables.currentPlayerIndex.value]
                 .linePositions = [];
-            GameVariables.grid[cellPosition.rowIndex]
-                [cellPosition.colIndex]('D${teamColor.colorCode}');
-            GameVariables.activePlayers.remove(GameVariables
-                .activePlayers[GameVariables.currentPlayerIndex.value]);
+            GameVariables.grid[tileData.tilePosition.rowIndex]
+                    [tileData.tilePosition.colIndex](
+                'D${tileData.colordata.colorCode}');
+            GameVariables.activePlayers.removeWhere((player) =>
+                player.colorData.colorCode == tileData.colordata.colorCode);
           }
           Board.addCurrentGridToHistory();
         }
@@ -107,7 +94,7 @@ class TowerTile extends StatelessWidget {
           child: Stack(
             children: [
               RiveAnimation.asset(
-                'assets/animations/towers/${teamColor.name}tower.riv',
+                'assets/animations/towers/${tileData.colordata.name}tower.riv',
               ),
               Align(
                 alignment: Alignment.bottomRight,
@@ -119,7 +106,7 @@ class TowerTile extends StatelessWidget {
                     color: Colors.black.withOpacity(0.5),
                   ),
                   child: Text(
-                    numOfTroopsInTower.string,
+                    tileData.numberOfTroops.toString(),
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
@@ -131,10 +118,8 @@ class TowerTile extends StatelessWidget {
 }
 
 class BrokenTowerTile extends StatelessWidget {
-  const BrokenTowerTile(
-      {super.key, required this.teamColor, required this.cellPosition});
-  final Colordata teamColor;
-  final Point cellPosition;
+  const BrokenTowerTile({super.key, required this.tileData});
+  final TileData tileData;
 
   @override
   Widget build(BuildContext context) {
@@ -147,7 +132,7 @@ class BrokenTowerTile extends StatelessWidget {
         color: Colors.white,
       ),
       child: RiveAnimation.asset(
-        'assets/animations/broken_towers/${teamColor.name}brokentower.riv',
+        'assets/animations/broken_towers/${tileData.colordata.name}brokentower.riv',
         stateMachines: const ['State Machine 1'],
       ),
     );
@@ -155,37 +140,33 @@ class BrokenTowerTile extends StatelessWidget {
 }
 
 class TroopsTile extends StatelessWidget {
-  const TroopsTile(
-      {super.key,
-      required this.teamColor,
-      this.numberOfTroops,
-      required this.cellPosition});
-  final Colordata teamColor;
-  final Point cellPosition;
-  final RxInt? numberOfTroops;
+  const TroopsTile({
+    super.key,
+    required this.tileData,
+  });
+  final TileData tileData;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (!Board.isCellValidToAddWarriors(cellPosition)) {
+        if (!Board.isCellValidToAddWarriors(tileData.tilePosition)) {
           return;
         }
-        String cellData = GameVariables
-            .grid[cellPosition.rowIndex][cellPosition.colIndex].string
-            .replaceAll(RegExp(r"[0-9]+"), "");
 
-        if (teamColor ==
+        if (tileData.colordata ==
             GameVariables.activePlayers[GameVariables.currentPlayerIndex.value]
                 .colorData) {
-          GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
-              '$cellData${(numberOfTroops!.value + 1)}');
+          GameVariables.grid[tileData.tilePosition.rowIndex]
+                  [tileData.tilePosition.colIndex](
+              '${tileData.tiletypecode + tileData.colordata.colorCode}${(tileData.numberOfTroops + 1)}');
         } else {
-          GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
-              '$cellData${(numberOfTroops!.value - 1)}');
-          if (numberOfTroops!.value == 1) {
-            GameVariables.grid[cellPosition.rowIndex]
-                [cellPosition.colIndex]("_");
+          GameVariables.grid[tileData.tilePosition.rowIndex]
+                  [tileData.tilePosition.colIndex](
+              '${tileData.tiletypecode + tileData.colordata.colorCode}${(tileData.numberOfTroops - 1)}');
+          if (tileData.numberOfTroops == 1) {
+            GameVariables.grid[tileData.tilePosition.rowIndex]
+                [tileData.tilePosition.colIndex]("_");
           }
         }
         GameVariables.turnRemainingTroops(
@@ -204,8 +185,8 @@ class TroopsTile extends StatelessWidget {
           child: Stack(
             children: [
               RiveAnimation.asset(
-                  'assets/animations/warriors/${teamColor.name}warrior.riv'),
-              numberOfTroops!.value == 1
+                  'assets/animations/warriors/${tileData.colordata.name}warrior.riv'),
+              tileData.numberOfTroops == 1
                   ? const SizedBox()
                   : Align(
                       alignment: Alignment.bottomRight,
@@ -216,7 +197,7 @@ class TroopsTile extends StatelessWidget {
                               topLeft: Radius.circular(10),
                             )),
                         child: Text(
-                          numberOfTroops!.string,
+                          tileData.numberOfTroops.toString(),
                           style: const TextStyle(color: Colors.white),
                         ),
                       ),
@@ -230,27 +211,24 @@ class TroopsTile extends StatelessWidget {
 class DeadTroopsTile extends StatelessWidget {
   const DeadTroopsTile({
     super.key,
-    this.numberOfTroops,
-    required this.cellPosition,
+    required this.tileData,
   });
-  final RxInt? numberOfTroops;
-  final Point cellPosition;
+  final TileData tileData;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
-          if (!Board.isCellValidToAddWarriors(cellPosition)) {
+          if (!Board.isCellValidToAddWarriors(tileData.tilePosition)) {
             return;
           }
-          String cellData = GameVariables
-              .grid[cellPosition.rowIndex][cellPosition.colIndex].string;
-          String celltype = cellData.replaceAll(RegExp(r"[0-9]+"), "");
-          GameVariables.grid[cellPosition.rowIndex][cellPosition.colIndex](
-              '$celltype${(numberOfTroops!.value - 1)}');
-          if (numberOfTroops!.value == 1) {
-            GameVariables.grid[cellPosition.rowIndex]
-                [cellPosition.colIndex]("_");
+
+          GameVariables.grid[tileData.tilePosition.rowIndex]
+                  [tileData.tilePosition.colIndex](
+              '${tileData.tiletypecode + tileData.colordata.colorCode}${(tileData.numberOfTroops - 1)}');
+          if (tileData.numberOfTroops == 1) {
+            GameVariables.grid[tileData.tilePosition.rowIndex]
+                [tileData.tilePosition.colIndex]("_");
           }
           GameVariables.turnRemainingTroops(
               GameVariables.turnRemainingTroops.value - 1);
@@ -277,7 +255,7 @@ class DeadTroopsTile extends StatelessWidget {
                         topLeft: Radius.circular(10),
                       )),
                   child: Text(
-                    numberOfTroops!.string,
+                    tileData.numberOfTroops.toString(),
                     style: const TextStyle(color: Colors.white),
                   ),
                 ),
@@ -289,15 +267,15 @@ class DeadTroopsTile extends StatelessWidget {
 class BlankTile extends StatelessWidget {
   const BlankTile({
     super.key,
-    required this.cellPosition,
+    required this.tileData,
   });
-  final Point cellPosition;
+  final TileData tileData;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
-          if (!Board.isCellValidToAddWarriors(cellPosition)) {
+          if (!Board.isCellValidToAddWarriors(tileData.tilePosition)) {
             return;
           }
           String currentTurnColorCode = GameVariables
@@ -305,8 +283,8 @@ class BlankTile extends StatelessWidget {
               .colorData
               .colorCode;
 
-          GameVariables.grid[cellPosition.rowIndex]
-              [cellPosition.colIndex]('W${currentTurnColorCode}1');
+          GameVariables.grid[tileData.tilePosition.rowIndex]
+              [tileData.tilePosition.colIndex]('W${currentTurnColorCode}1');
           GameVariables.turnRemainingTroops(
               GameVariables.turnRemainingTroops.value - 1);
 
