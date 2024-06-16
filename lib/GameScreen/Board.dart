@@ -1,6 +1,13 @@
+import 'dart:developer';
+
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:rive/rive.dart';
+import 'package:tower_war/Classes/color_data.dart';
+import 'package:tower_war/Classes/player.dart';
 import 'package:tower_war/Classes/point.dart';
+import 'package:tower_war/CommonUsed/page_options.dart';
 import 'package:tower_war/GameScreen/game_variables.dart';
 
 class Board {
@@ -167,7 +174,8 @@ class Board {
   }
 
   static void updateTeamsLine() {
-    for (var player in GameVariables.activePlayers) {
+    for (var player
+        in GameVariables.activePlayers.where((player) => player.isAlive)) {
       String currentTurnColorCode = player.colorData.colorCode;
       Point currentTurnTowerPosition = player.towerPosition;
       Board board = Board();
@@ -180,7 +188,8 @@ class Board {
 
   static Future<void> checkBoard() async {
     updateTeamsLine();
-    for (var player in GameVariables.activePlayers) {
+    for (var player
+        in GameVariables.activePlayers.where((player) => player.isAlive)) {
       String currentTurnColorCode = player.colorData.colorCode;
       Board.eraseAllCellTypeOutsideTheLineOfPoints(
           player.linePositions, currentTurnColorCode);
@@ -212,8 +221,7 @@ class Board {
 
   static bool isCellValidToAddWarriors(Point cellPosition) {
     /* *SECTION - Check if the cell belongs to a specified line */
-    List<Point> pointsOfLine = GameVariables
-        .activePlayers[GameVariables.currentPlayerIndex.value].linePositions;
+    List<Point> pointsOfLine = GameVariables.currentPlayer.linePositions;
     if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
       Get.rawSnackbar(
           messageText: const Text(
@@ -235,5 +243,96 @@ class Board {
     }
     /* *!SECTION */
     return true;
+  }
+
+  static Future<void> checkIfThePlayerHasEnoughTroopsInTower(
+      Point towerPosition) async {
+    String cellData = GameVariables
+        .grid[towerPosition.rowIndex][towerPosition.colIndex].string
+        .replaceAll(RegExp(r"[0-9]+"), "");
+
+    int numberOfTroopsInTower = int.parse(GameVariables
+        .grid[towerPosition.rowIndex][towerPosition.colIndex].value
+        .replaceAll(RegExp(r'[^0-9]'), ''));
+    Player player = GameVariables.activePlayers.firstWhere((player) =>
+        player.towerPosition.rowIndex == towerPosition.rowIndex &&
+        player.towerPosition.colIndex == towerPosition.colIndex);
+    /* *SECTION - if the tower doesn't have enough troops & doesn't already exist*/
+    if (numberOfTroopsInTower - 5 < 1 &&
+        GameVariables.leaderboard.values
+            .where((addedplayer) => addedplayer == player)
+            .isEmpty) {
+      player.linePositions = [];
+      Board.eraseAllCellTypeOutsideTheLineOfPoints(
+          [], player.colorData.colorCode);
+      GameVariables.grid[towerPosition.rowIndex][towerPosition.colIndex](
+          'D${Colordata.availableColors.firstWhere((colorData) => cellData.contains(colorData.colorCode)).colorCode}0');
+      int placeOfTheDeadPlayer =
+          GameVariables.activePlayers.length - GameVariables.leaderboard.length;
+      GameVariables.leaderboard.addAll({placeOfTheDeadPlayer: player});
+      player.isAlive = false;
+    }
+  }
+
+  static Future<bool> isTheGameEnded() async {
+    int placeOfTheDeadPlayer =
+        GameVariables.activePlayers.length - GameVariables.leaderboard.length;
+
+    /* *SECTION - Check if there is only one player */
+    if (placeOfTheDeadPlayer == 1) {
+      GameVariables.leaderboard.addAll({
+        1: GameVariables.activePlayers.firstWhere((player) => player.isAlive)
+      });
+      for (var player in GameVariables.leaderboard.entries) {
+        FlameAudio.play('victory/${player.key}_place.mp3');
+        await Get.generalDialog(pageBuilder: (BuildContext context,
+            Animation<double> animation, Animation<double> secondaryAnimation) {
+          return GestureDetector(
+            onTap: () {
+              Get.back();
+            },
+            child: RiveAnimation.asset(
+              'assets/animations/victory.riv',
+              stateMachines: const ['victory'],
+              onInit: (Artboard artboard) {
+                final controller =
+                    StateMachineController.fromArtboard(artboard, 'victory');
+                SMINumber redblueyellowgreenTowerIndex =
+                    controller!.findInput<double>('numOfTower') as SMINumber;
+                int towerIndex = player.value.colorData.colorCode == "R"
+                    ? 1
+                    : player.value.colorData.colorCode == "B"
+                        ? 2
+                        : player.value.colorData.colorCode == "Y"
+                            ? 3
+                            : player.value.colorData.colorCode == "G"
+                                ? 4
+                                : 4;
+                redblueyellowgreenTowerIndex.change(towerIndex.toDouble());
+                final playerNameField =
+                    artboard.component<TextValueRun>('playerName');
+                playerNameField!.text = player.value.name;
+                final placeField = artboard.component<TextValueRun>('order');
+                String place = player.key == 1
+                    ? 'st'
+                    : player.key == 2
+                        ? 'nd'
+                        : player.key == 3
+                            ? 'rd'
+                            : player.key == 4
+                                ? 'th'
+                                : 'th';
+                placeField!.text = '${player.key}$place';
+                artboard.addController(controller);
+              },
+            ),
+          );
+        });
+      }
+      Get.offAllNamed(PageNames.homePage);
+      return true;
+    }
+    return false;
+    /* *!SECTION */
   }
 }

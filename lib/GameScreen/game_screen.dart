@@ -30,21 +30,26 @@ class _GameScreenState extends State<GameScreen> {
   void dispose() {
     GameVariables.activePlayers = [];
     GameVariables.currentPlayerIndex = 0.obs;
+    GameVariables.leaderboard = {};
     super.dispose();
   }
 
   @override
   void initState() {
+    GameVariables.currentPlayerIndex.listen((val) {
+      GameVariables.currentPlayer = GameVariables.activePlayers[val];
+    });
+
     GameVariables.grid = [
       [
-        'TR100'.obs,
+        'TR80'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
-        'TB100'.obs
+        'TB20'.obs
       ],
       ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
       ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
@@ -58,14 +63,14 @@ class _GameScreenState extends State<GameScreen> {
       ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
       ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
       [
-        GameVariables.activePlayers.length == 4 ? 'TG100'.obs : '_'.obs,
+        GameVariables.activePlayers.length == 4 ? 'TG16'.obs : '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
-        GameVariables.activePlayers.length >= 3 ? 'TY100'.obs : '_'.obs
+        GameVariables.activePlayers.length >= 3 ? 'TY10'.obs : '_'.obs
       ]
     ];
     /* *SECTION - fortune wheel */
@@ -89,8 +94,7 @@ class _GameScreenState extends State<GameScreen> {
   @override
   Widget build(BuildContext context) {
     int rowCount = -1;
-    Color currentTurnColor = GameVariables
-        .activePlayers[GameVariables.currentPlayerIndex.value].colorData.color;
+    Color currentTurnColor = GameVariables.currentPlayer.colorData.color;
     return Scaffold(
       backgroundColor: currentTurnColor,
       body: ListView(
@@ -130,14 +134,13 @@ class _GameScreenState extends State<GameScreen> {
                   return DataCardTile(
                       width: 200,
                       hintingText:
-                          'Remaining Warriors For ${GameVariables.activePlayers[GameVariables.currentPlayerIndex.value].colorData.name} Turn',
+                          'Remaining Warriors For ${GameVariables.currentPlayer.colorData.name} Turn',
                       dataText:
                           '${GameVariables.turnRemainingTroops.value}'.obs);
                 }),
                 Obx(() {
-                  Point towerPosition = GameVariables
-                      .activePlayers[GameVariables.currentPlayerIndex.value]
-                      .towerPosition;
+                  Point towerPosition =
+                      GameVariables.currentPlayer.towerPosition;
                   int numberOfTroopsInTower = int.parse(GameVariables
                       .grid[towerPosition.rowIndex][towerPosition.colIndex]
                       .value
@@ -145,9 +148,9 @@ class _GameScreenState extends State<GameScreen> {
                   return DataCardTile(
                       width: 200,
                       hintingText:
-                          'Warriors in ${GameVariables.activePlayers[GameVariables.currentPlayerIndex.value].colorData.name} Tower ',
+                          'Warriors in ${GameVariables.currentPlayer.colorData.name} Tower ',
                       dataText: '$numberOfTroopsInTower'.obs);
-                }),
+                })
               ],
             ),
           ),
@@ -176,75 +179,36 @@ class _GameScreenState extends State<GameScreen> {
             IconTile(
                 onTap: () async {
                   await Board.checkBoard();
-                  if (GameVariables.activePlayers[
-                          GameVariables.currentPlayerIndex.value] ==
-                      GameVariables.activePlayers.last) {
-                    GameVariables.currentPlayerIndex(0);
-                  } else {
-                    GameVariables.currentPlayerIndex(
-                        GameVariables.currentPlayerIndex.value + 1);
+                  goNextTurn();
+                  while (!GameVariables.currentPlayer.isAlive) {
+                    goNextTurn();
                   }
 
-                  /* *SECTION - Take 5 warriors from tower & give them to remaining warriors*/
-                  Point towerPosition = GameVariables
-                      .activePlayers[GameVariables.currentPlayerIndex.value]
-                      .towerPosition;
-                  String cellData = GameVariables
-                      .grid[towerPosition.rowIndex][towerPosition.colIndex]
-                      .string
-                      .replaceAll(RegExp(r"[0-9]+"), "");
-
-                  int numberOfTroopsInTower = int.parse(GameVariables
-                      .grid[towerPosition.rowIndex][towerPosition.colIndex]
-                      .value
-                      .replaceAll(RegExp(r'[^0-9]'), ''));
-                  /* *SECTION - if the tower doesn't have enough troops */
-                  while (numberOfTroopsInTower - 5 < 1) {
-                    if (GameVariables.activePlayers[
-                            GameVariables.currentPlayerIndex.value] ==
-                        GameVariables.activePlayers.last) {
-                      GameVariables.currentPlayerIndex(0);
-                    } else {
-                      GameVariables.currentPlayerIndex(
-                          GameVariables.currentPlayerIndex.value);
-                    }
-                    GameVariables
-                        .activePlayers[GameVariables.currentPlayerIndex.value]
-                        .linePositions = [];
-                    Board.eraseAllCellTypeOutsideTheLineOfPoints(
-                        [],
-                        GameVariables
-                            .activePlayers[
-                                GameVariables.currentPlayerIndex.value]
-                            .colorData
-                            .colorCode);
-                    GameVariables.grid[towerPosition.rowIndex]
-                            [towerPosition.colIndex](
-                        'D${Colordata.availableColors.firstWhere((colorData) => cellData.contains(colorData.colorCode)).colorCode}');
-                    GameVariables.activePlayers.remove(
-                        GameVariables.activePlayers.firstWhere((player) =>
-                            cellData.contains(player.colorData.colorCode)));
-                    towerPosition = GameVariables
-                        .activePlayers[GameVariables.currentPlayerIndex.value]
-                        .towerPosition;
-                    cellData = GameVariables
+                  if (!await Board.isTheGameEnded()) {
+                    Point towerPosition =
+                        GameVariables.currentPlayer.towerPosition;
+                    String cellData = GameVariables
                         .grid[towerPosition.rowIndex][towerPosition.colIndex]
                         .string
                         .replaceAll(RegExp(r"[0-9]+"), "");
 
-                    numberOfTroopsInTower = int.parse(GameVariables
+                    int numberOfTroopsInTower = int.parse(GameVariables
                         .grid[towerPosition.rowIndex][towerPosition.colIndex]
                         .value
                         .replaceAll(RegExp(r'[^0-9]'), ''));
+                    /* *SECTION - Take 5 warriors from tower & give them to remaining warriors*/
+
+                    GameVariables.grid[towerPosition.rowIndex]
+                            [towerPosition.colIndex](
+                        '$cellData${(numberOfTroopsInTower - 5)}');
+                    GameVariables.turnRemainingTroops(5);
+                    /* *!SECTION */
+                    setState(() {});
+                    GameVariables.historyController.modify(
+                        Board.convertListRxStringToListString(
+                            GameVariables.grid));
+                    GameVariables.historyController.clearHistory();
                   }
-                  /* *!SECTION */
-                  GameVariables.grid[towerPosition.rowIndex]
-                          [towerPosition.colIndex](
-                      '$cellData${(numberOfTroopsInTower - 5)}');
-                  GameVariables.turnRemainingTroops(5);
-                  /* *!SECTION */
-                  setState(() {});
-                  GameVariables.historyController.clearHistory();
                 },
                 foregroundIcon: Icons.done_all_outlined),
             /* *!SECTION */
@@ -268,12 +232,27 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  void goNextTurn() {
+    if (GameVariables.activePlayers[GameVariables.currentPlayerIndex.value] ==
+        GameVariables.activePlayers.last) {
+      GameVariables.currentPlayerIndex(0);
+    } else {
+      GameVariables.currentPlayerIndex(
+          GameVariables.currentPlayerIndex.value + 1);
+    }
+    GameVariables.currentPlayer =
+        GameVariables.activePlayers[GameVariables.currentPlayerIndex.value];
+    Board.checkIfThePlayerHasEnoughTroopsInTower(
+        GameVariables.currentPlayer.towerPosition);
+  }
+
   void showFortuneWheelToChooseWhichPlayerBeginsFirst() {
     /* *SECTION - fortune wheel */
     Future.delayed(
       Durations.long4,
       () {
-        GameVariables.currentPlayerIndex(math.Random().nextInt(3));
+        GameVariables.currentPlayerIndex(
+            math.Random().nextInt(GameVariables.activePlayers.length));
 
         fortuneWheelController.add(GameVariables.currentPlayerIndex.value);
         Get.dialog(Container(
@@ -288,9 +267,7 @@ class _GameScreenState extends State<GameScreen> {
               Future.delayed(Durations.long4, () {
                 Get.back();
                 /* *SECTION - Take 5 warriors from tower & give them to remaining warriors*/
-                Point towerPosition = GameVariables
-                    .activePlayers[GameVariables.currentPlayerIndex.value]
-                    .towerPosition;
+                Point towerPosition = GameVariables.currentPlayer.towerPosition;
                 String cellData = GameVariables
                     .grid[towerPosition.rowIndex][towerPosition.colIndex].string
                     .replaceAll(RegExp(r"[0-9]+"), "");
@@ -302,6 +279,8 @@ class _GameScreenState extends State<GameScreen> {
                         [towerPosition.colIndex](
                     '$cellData${(numberOfTroopsInTower - 5)}');
                 GameVariables.turnRemainingTroops(5);
+                GameVariables.historyController.modify(
+                    Board.convertListRxStringToListString(GameVariables.grid));
                 /* *!SECTION */
                 setState(() {});
               });

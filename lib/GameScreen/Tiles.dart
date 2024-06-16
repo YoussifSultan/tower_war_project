@@ -61,23 +61,14 @@ class TowerTile extends StatelessWidget {
           return;
         }
 
-        if (tileData.colordata !=
-            GameVariables.activePlayers[GameVariables.currentPlayerIndex.value]
-                .colorData) {
+        if (tileData.colordata != GameVariables.currentPlayer.colorData) {
           GameVariables.grid[tileData.tilePosition.rowIndex]
                   [tileData.tilePosition.colIndex](
               '${tileData.tiletypecode + tileData.colordata.colorCode}${(tileData.numberOfTroops - 2)}');
           GameVariables.turnRemainingTroops(
               GameVariables.turnRemainingTroops.value - 1);
-          if (tileData.numberOfTroops < 1) {
-            GameVariables.activePlayers[GameVariables.currentPlayerIndex.value]
-                .linePositions = [];
-            GameVariables.grid[tileData.tilePosition.rowIndex]
-                    [tileData.tilePosition.colIndex](
-                'D${tileData.colordata.colorCode}');
-            GameVariables.activePlayers.removeWhere((player) =>
-                player.colorData.colorCode == tileData.colordata.colorCode);
-          }
+          Board.checkIfThePlayerHasEnoughTroopsInTower(tileData.tilePosition);
+          Board.isTheGameEnded();
           Board.addCurrentGridToHistory();
         }
       },
@@ -163,9 +154,7 @@ class TroopsTile extends StatelessWidget {
           return;
         }
         /* *!SECTION */
-        if (tileData.colordata ==
-            GameVariables.activePlayers[GameVariables.currentPlayerIndex.value]
-                .colorData) {
+        if (tileData.colordata == GameVariables.currentPlayer.colorData) {
           GameVariables.grid[tileData.tilePosition.rowIndex]
                   [tileData.tilePosition.colIndex](
               '${tileData.tiletypecode + tileData.colordata.colorCode}${(tileData.numberOfTroops + 1)}');
@@ -287,10 +276,8 @@ class BlankTile extends StatelessWidget {
           if (!Board.isCellValidToAddWarriors(tileData.tilePosition)) {
             return;
           }
-          String currentTurnColorCode = GameVariables
-              .activePlayers[GameVariables.currentPlayerIndex.value]
-              .colorData
-              .colorCode;
+          String currentTurnColorCode =
+              GameVariables.currentPlayer.colorData.colorCode;
 
           GameVariables.grid[tileData.tilePosition.rowIndex]
               [tileData.tilePosition.colIndex]('W${currentTurnColorCode}1');

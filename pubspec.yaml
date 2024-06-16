@@ -80,6 +80,7 @@ flutter:
     - assets/animations/towers/
     - assets/animations/warriors/
     - assets/animations/broken_towers/
+    - assets/audio/victory/
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware

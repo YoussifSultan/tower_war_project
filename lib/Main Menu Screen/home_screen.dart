@@ -18,7 +18,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     FlameAudio.bgm.initialize();
     /* *TODO - Uncomment when releasing */
-    // FlameAudio.bgm.play('backgroundmusicForHomeScreen.mp3', volume: .25);
+    FlameAudio.bgm.play('backgroundmusicForHomeScreen.mp3', volume: .25);
     super.initState();
   }
 
@@ -54,6 +54,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ButtonTile(
                     text: 'Play',
                     onTap: () {
+                      FlameAudio.bgm.stop();
                       Get.toNamed(PageNames.gameOptionsDialog);
                     },
                   ),

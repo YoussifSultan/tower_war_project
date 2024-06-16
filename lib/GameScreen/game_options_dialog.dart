@@ -145,6 +145,7 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                           onTap: () {
                             GameVariables.activePlayers = [
                               Player(
+                                  isAlive: true,
                                   name: redTowerPlayerName.string,
                                   linePositions: [
                                     Point(rowIndex: 0, colIndex: 0)
@@ -155,6 +156,7 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                                   towerPosition:
                                       Point(rowIndex: 0, colIndex: 0)),
                               Player(
+                                isAlive: true,
                                 name: blueTowerPlayerName.string,
                                 linePositions: [
                                   Point(rowIndex: 0, colIndex: 7)
@@ -166,7 +168,8 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                             ];
                             if (selectedNumberOfPlayers.value >= 3) {
                               GameVariables.activePlayers.add(Player(
-                                  name: 'Khalil',
+                                  isAlive: true,
+                                  name: yellowTowerPlayerName.value,
                                   linePositions: [
                                     Point(rowIndex: 12, colIndex: 7)
                                   ],
@@ -178,7 +181,8 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                             }
                             if (selectedNumberOfPlayers.value == 4) {
                               GameVariables.activePlayers.add(Player(
-                                  name: 'Sultan',
+                                  isAlive: true,
+                                  name: greenTowerPlayerName.value,
                                   linePositions: [
                                     Point(rowIndex: 0, colIndex: 7)
                                   ],
@@ -186,7 +190,7 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                                       .firstWhere(
                                           (color) => color.colorCode == 'G'),
                                   towerPosition:
-                                      Point(rowIndex: 0, colIndex: 7)));
+                                      Point(rowIndex: 12, colIndex: 0)));
                             }
                             Get.offAndToNamed(PageNames.gamePage);
                           })),
