@@ -1,3 +1,5 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
@@ -17,8 +19,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     FlameAudio.bgm.initialize();
-    /* *TODO - Uncomment when releasing */
-    FlameAudio.bgm.play('backgroundmusicForHomeScreen.mp3', volume: .25);
+    // FlameAudio.bgm.play('backgroundmusicForHomeScreen.mp3', volume: .25);
     super.initState();
   }
 

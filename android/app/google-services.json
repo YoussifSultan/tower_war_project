@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "826150444355",
+    "project_id": "tower-war-flutter-project",
+    "storage_bucket": "tower-war-flutter-project.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:826150444355:android:2d73d9a915f9496374e3f6",
+        "android_client_info": {
+          "package_name": "com.example.tower_war_project"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBCat457xUHpiLl_ll71VVNWa_T82G8wyg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
