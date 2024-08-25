@@ -221,6 +221,7 @@ class Board {
     /* *SECTION - Check if the cell belongs to a specified line */
     List<Point> pointsOfLine = GameVariables.currentPlayer.linePositions;
     if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
+      Get.closeAllSnackbars();
       Get.rawSnackbar(
           messageText: const Text(
         'Put The Warrior near the line',
@@ -232,6 +233,7 @@ class Board {
     /* *!SECTION */
     /* *SECTION - Check if there is enough warriors */
     if (GameVariables.turnRemainingTroops.value == 0) {
+      Get.closeAllSnackbars();
       Get.rawSnackbar(
           messageText: const Text(
         'There is no warriors left',
@@ -332,5 +334,47 @@ class Board {
     }
     return false;
     /* *!SECTION */
+  }
+
+  static void goNextTurn() {
+    if (GameVariables.activePlayers[GameVariables.currentPlayerIndex.value] ==
+        GameVariables.activePlayers.last) {
+      GameVariables.currentPlayerIndex(0);
+    } else {
+      GameVariables.currentPlayerIndex(
+          GameVariables.currentPlayerIndex.value + 1);
+    }
+    GameVariables.currentPlayer =
+        GameVariables.activePlayers[GameVariables.currentPlayerIndex.value];
+    Board.checkIfThePlayerHasEnoughTroopsInTower(
+        GameVariables.currentPlayer.towerPosition);
+  }
+
+  static Future<void> endTurnMethod() async {
+    await Board.checkBoard();
+    goNextTurn();
+    while (!GameVariables.currentPlayer.isAlive) {
+      goNextTurn();
+    }
+
+    if (!await Board.isTheGameEnded()) {
+      Point towerPosition = GameVariables.currentPlayer.towerPosition;
+      String cellData = GameVariables
+          .grid[towerPosition.rowIndex][towerPosition.colIndex].string
+          .replaceAll(RegExp(r"[0-9]+"), "");
+
+      int numberOfTroopsInTower = int.parse(GameVariables
+          .grid[towerPosition.rowIndex][towerPosition.colIndex].value
+          .replaceAll(RegExp(r'[^0-9]'), ''));
+      /* *SECTION - Take 5 warriors from tower & give them to remaining warriors*/
+
+      GameVariables.grid[towerPosition.rowIndex]
+          [towerPosition.colIndex]('$cellData${(numberOfTroopsInTower - 5)}');
+      GameVariables.turnRemainingTroops(5);
+      /* *!SECTION */
+      GameVariables.historyController
+          .modify(Board.convertListRxStringToListString(GameVariables.grid));
+      GameVariables.historyController.clearHistory();
+    }
   }
 }

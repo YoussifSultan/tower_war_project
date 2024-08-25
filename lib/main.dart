@@ -1,12 +1,13 @@
-import 'package:firebase_crashlytics/firebase_crashlytics.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_navigation/src/root/get_material_app.dart';
 import 'package:get/get_navigation/src/routes/get_route.dart';
 import 'package:get/get_navigation/src/routes/transitions_type.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:showcaseview/showcaseview.dart';
 import 'package:tower_war/CommonUsed/page_options.dart';
 import 'package:tower_war/GameScreen/game_options_dialog.dart';
 import 'package:tower_war/GameScreen/game_screen.dart';
+import 'package:tower_war/HowToPlayScreen/howToPlay.dart';
 import 'package:tower_war/Main%20Menu%20Screen/home_screen.dart';
 import 'package:tower_war/Settings_screen/settings_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -17,16 +18,18 @@ Future<void> main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
-  FlutterError.onError = (errorDetails) {
-    FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
-  };
+  MobileAds.instance.initialize();
+  // FlutterError.onError = (errorDetails) {
+  //   FirebaseCrashlytics.instance.recordFlutterFatalError(errorDetails);
+  // };
   // Pass all uncaught asynchronous errors that aren't handled by the Flutter framework to Crashlytics
-  PlatformDispatcher.instance.onError = (error, stack) {
-    FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
-    return true;
-  };
+  // PlatformDispatcher.instance.onError = (error, stack) {
+  //   FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
+  //   return true;
+  // };
+
   runApp(GetMaterialApp(
-    initialRoute: PageNames.homePage,
+    initialRoute: PageNames.tutorialPage,
     getPages: [
       GetPage(
           name: PageNames.gameOptionsDialog,
@@ -35,6 +38,15 @@ Future<void> main() async {
       GetPage(
           name: PageNames.homePage,
           page: () => const HomeScreen(),
+          transition: Transition.cupertino),
+      GetPage(
+          name: PageNames.tutorialPage,
+          page: () => ShowCaseWidget(
+              blurValue: 1,
+              autoPlayDelay: const Duration(seconds: 3),
+              builder: (context) {
+                return const TutorialScreen();
+              }),
           transition: Transition.cupertino),
       GetPage(
           name: PageNames.settingsPage,

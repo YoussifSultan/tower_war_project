@@ -1,12 +1,14 @@
-import 'package:firebase_analytics/firebase_analytics.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:rive/rive.dart';
+import 'package:tower_war/Classes/color_data.dart';
+import 'package:tower_war/Classes/player.dart';
+import 'package:tower_war/Classes/point.dart';
 import 'package:tower_war/CommonUsed/button_tile.dart';
 import 'package:tower_war/CommonUsed/constants.dart';
 import 'package:tower_war/CommonUsed/page_options.dart';
+import 'package:tower_war/GameScreen/game_variables.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -37,12 +39,9 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: const Color.fromRGBO(76, 179, 212, 1),
       body: Stack(
         children: [
-          SizedBox(
-              width: Constants.screenWidth,
-              height: Constants.screenHeight,
-              child: const RiveAnimation.asset(
-                'assets/animations/pagetransition.riv',
-              )),
+          const RiveAnimation.asset(
+            'assets/animations/pagetransition.riv',
+          ),
           Align(
             alignment: Alignment.bottomCenter,
             child: SizedBox(
@@ -66,8 +65,27 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                   ButtonTile(
-                    text: 'Share',
-                    onTap: () {},
+                    text: 'Tutorial',
+                    onTap: () {
+                      GameVariables.activePlayers = [
+                        Player(
+                            isAlive: true,
+                            name: 'Red Tower',
+                            linePositions: [Point(rowIndex: 0, colIndex: 0)],
+                            colorData: Colordata.availableColors
+                                .firstWhere((color) => color.colorCode == 'R'),
+                            towerPosition: Point(rowIndex: 0, colIndex: 0)),
+                        Player(
+                          isAlive: true,
+                          name: "Blue Tower",
+                          linePositions: [Point(rowIndex: 0, colIndex: 7)],
+                          colorData: Colordata.availableColors
+                              .firstWhere((color) => color.colorCode == 'B'),
+                          towerPosition: Point(rowIndex: 0, colIndex: 7),
+                        ),
+                      ];
+                      Get.toNamed(PageNames.tutorialPage);
+                    },
                   ),
                 ],
               ),

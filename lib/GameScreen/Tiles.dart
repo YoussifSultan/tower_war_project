@@ -167,8 +167,7 @@ class TroopsTile extends StatelessWidget {
                 [tileData.tilePosition.colIndex]("_");
           }
         }
-        GameVariables.turnRemainingTroops(
-            GameVariables.turnRemainingTroops.value - 1);
+        GameVariables.turnRemainingTroops--;
         Board.addCurrentGridToHistory();
         Board.updateTeamsLine();
       },
@@ -228,8 +227,7 @@ class DeadTroopsTile extends StatelessWidget {
             GameVariables.grid[tileData.tilePosition.rowIndex]
                 [tileData.tilePosition.colIndex]("_");
           }
-          GameVariables.turnRemainingTroops(
-              GameVariables.turnRemainingTroops.value - 1);
+          GameVariables.turnRemainingTroops--;
           Board.addCurrentGridToHistory();
           Board.updateTeamsLine();
         },

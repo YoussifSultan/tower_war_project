@@ -37,7 +37,6 @@ class _GameScreenState extends State<GameScreen> {
     GameVariables.currentPlayerIndex.listen((val) {
       GameVariables.currentPlayer = GameVariables.activePlayers[val];
     });
-
     GameVariables.grid = [
       [
         'TR80'.obs,
@@ -71,9 +70,7 @@ class _GameScreenState extends State<GameScreen> {
         GameVariables.activePlayers.length >= 3 ? 'TY10'.obs : '_'.obs
       ]
     ];
-    /* *SECTION - fortune wheel */
-    showFortuneWheelToChooseWhichPlayerBeginsFirst();
-    /* *!SECTION */
+
     GameVariables.historyController = SimpleStack<List<List<String>>>(
       Board.convertListRxStringToListString(GameVariables.grid),
       onUpdate: (val) {
@@ -87,73 +84,31 @@ class _GameScreenState extends State<GameScreen> {
       },
     );
     super.initState();
+    /* *SECTION - fortune wheel */
+    WidgetsBinding.instance.addPostFrameCallback(
+        (_) => showFortuneWheelToChooseWhichPlayerBeginsFirst());
+    /* *!SECTION */
   }
 
   @override
   Widget build(BuildContext context) {
-    int rowCount = -1;
     Color currentTurnColor = GameVariables.currentPlayer.colorData.color;
     return Scaffold(
       backgroundColor: currentTurnColor,
       body: ListView(
         shrinkWrap: true,
-        children: [
+        children: const [
           /* *SECTION - Board */
-          Container(
-            margin: const EdgeInsets.only(left: 5, right: 5, top: 20),
-            child: GridView.builder(
-              physics: const BouncingScrollPhysics(),
-              shrinkWrap: true,
-              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 8),
-              itemBuilder: (_, index) {
-                if (index.remainder(8) == 0) rowCount++;
-                int columnCount = index - (rowCount * 8);
-
-                return CustomTile(
-                    cellData: GameVariables.grid[rowCount][columnCount],
-                    position: Point(rowIndex: rowCount, colIndex: columnCount));
-              },
-              itemCount: 104,
-            ),
-          ),
+          BoardWidget(),
 
           /* *!SECTION */
-          const SizedBox(
+          SizedBox(
             height: 20,
           ),
-          /* *SECTION - Important Data */
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                Obx(() {
-                  return DataCardTile(
-                      width: 200,
-                      hintingText:
-                          'Remaining Warriors For ${GameVariables.currentPlayer.colorData.name} Turn',
-                      dataText:
-                          '${GameVariables.turnRemainingTroops.value}'.obs);
-                }),
-                Obx(() {
-                  Point towerPosition =
-                      GameVariables.currentPlayer.towerPosition;
-                  int numberOfTroopsInTower = int.parse(GameVariables
-                      .grid[towerPosition.rowIndex][towerPosition.colIndex]
-                      .value
-                      .replaceAll(RegExp(r'[^0-9]'), ''));
-                  return DataCardTile(
-                      width: 200,
-                      hintingText:
-                          'Warriors in ${GameVariables.currentPlayer.colorData.name} Tower ',
-                      dataText: '$numberOfTroopsInTower'.obs);
-                })
-              ],
-            ),
-          ),
+          /* *SECTION - Turn Data */
+          TurnDataWidget(),
           /* *!SECTION */
-          const SizedBox(
+          SizedBox(
             height: 20,
           ),
         ],
@@ -176,37 +131,8 @@ class _GameScreenState extends State<GameScreen> {
             /* *SECTION - end Turn Button */
             IconTile(
                 onTap: () async {
-                  await Board.checkBoard();
-                  goNextTurn();
-                  while (!GameVariables.currentPlayer.isAlive) {
-                    goNextTurn();
-                  }
-
-                  if (!await Board.isTheGameEnded()) {
-                    Point towerPosition =
-                        GameVariables.currentPlayer.towerPosition;
-                    String cellData = GameVariables
-                        .grid[towerPosition.rowIndex][towerPosition.colIndex]
-                        .string
-                        .replaceAll(RegExp(r"[0-9]+"), "");
-
-                    int numberOfTroopsInTower = int.parse(GameVariables
-                        .grid[towerPosition.rowIndex][towerPosition.colIndex]
-                        .value
-                        .replaceAll(RegExp(r'[^0-9]'), ''));
-                    /* *SECTION - Take 5 warriors from tower & give them to remaining warriors*/
-
-                    GameVariables.grid[towerPosition.rowIndex]
-                            [towerPosition.colIndex](
-                        '$cellData${(numberOfTroopsInTower - 5)}');
-                    GameVariables.turnRemainingTroops(5);
-                    /* *!SECTION */
-                    setState(() {});
-                    GameVariables.historyController.modify(
-                        Board.convertListRxStringToListString(
-                            GameVariables.grid));
-                    GameVariables.historyController.clearHistory();
-                  }
+                  await Board.endTurnMethod();
+                  setState(() {});
                 },
                 foregroundIcon: Icons.done_all_outlined),
             /* *!SECTION */
@@ -216,7 +142,7 @@ class _GameScreenState extends State<GameScreen> {
                   GameVariables.isCellSelectionModeSelected(true);
                   Get.rawSnackbar(
                       messageText: const Text(
-                    'Please Select a Tile to withdraw troops',
+                    'Please Select a Tile to transfer troops',
                     style: TextStyle(color: Colors.white),
                   ));
                 },
@@ -296,5 +222,70 @@ class _GameScreenState extends State<GameScreen> {
       },
     );
     /* *!SECTION */
+  }
+}
+
+class TurnDataWidget extends StatelessWidget {
+  const TurnDataWidget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          Obx(() {
+            return DataCardTile(
+                width: 200,
+                hintingText:
+                    'Remaining Warriors For ${GameVariables.currentPlayer.colorData.name} Turn',
+                dataText: '${GameVariables.turnRemainingTroops.value}'.obs);
+          }),
+          Obx(() {
+            Point towerPosition = GameVariables.currentPlayer.towerPosition;
+            int numberOfTroopsInTower = int.parse(GameVariables
+                .grid[towerPosition.rowIndex][towerPosition.colIndex].value
+                .replaceAll(RegExp(r'[^0-9]'), ''));
+            return DataCardTile(
+                width: 200,
+                hintingText:
+                    'Warriors in ${GameVariables.currentPlayer.colorData.name} Tower ',
+                dataText: '$numberOfTroopsInTower'.obs);
+          })
+        ],
+      ),
+    );
+  }
+}
+
+class BoardWidget extends StatelessWidget {
+  const BoardWidget({
+    super.key,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    int rowCount = -1;
+    return Container(
+      margin: const EdgeInsets.only(left: 5, right: 5, top: 20),
+      child: GridView.builder(
+        physics: const BouncingScrollPhysics(),
+        shrinkWrap: true,
+        gridDelegate:
+            const SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 8),
+        itemBuilder: (_, index) {
+          if (index.remainder(8) == 0) rowCount++;
+          int columnCount = index - (rowCount * 8);
+
+          return CustomTile(
+              cellData: GameVariables.grid[rowCount][columnCount],
+              position: Point(rowIndex: rowCount, colIndex: columnCount));
+        },
+        itemCount: 104,
+      ),
+    );
   }
 }
