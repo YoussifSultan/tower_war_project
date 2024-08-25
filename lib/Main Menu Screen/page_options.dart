@@ -3,5 +3,4 @@ class PageNames {
   static String gamePage = '/GamePage';
   static String tutorialPage = '/TutorialPage';
   static String gameOptionsDialog = '/GameOptionDialog';
-  static const String settingsPage = '/SettingsPage';
 }

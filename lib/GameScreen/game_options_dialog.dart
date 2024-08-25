@@ -6,8 +6,9 @@ import 'package:tower_war/Classes/player.dart';
 import 'package:tower_war/Classes/point.dart';
 import 'package:tower_war/CommonUsed/button_tile.dart';
 import 'package:tower_war/CommonUsed/constants.dart';
-import 'package:tower_war/CommonUsed/page_options.dart';
+import 'package:tower_war/Main%20Menu%20Screen/page_options.dart';
 import 'package:tower_war/GameScreen/game_variables.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class GameOptionsDialog extends StatefulWidget {
   const GameOptionsDialog({super.key});
@@ -18,10 +19,21 @@ class GameOptionsDialog extends StatefulWidget {
 
 class _GameOptionsDialogState extends State<GameOptionsDialog> {
   RxInt selectedNumberOfPlayers = 0.obs;
-  RxString redTowerPlayerName = 'red Tower'.obs;
-  RxString blueTowerPlayerName = 'blue Tower'.obs;
-  RxString yellowTowerPlayerName = 'yellow Tower'.obs;
-  RxString greenTowerPlayerName = 'green Tower'.obs;
+  RxString redTowerPlayerName = ''.obs;
+  RxString blueTowerPlayerName = ''.obs;
+  RxString yellowTowerPlayerName = ''.obs;
+  RxString greenTowerPlayerName = ''.obs;
+  @override
+  void initState() {
+    SharedPreferences.getInstance().then((prefs) {
+      redTowerPlayerName = prefs.getString('redTowerName')!.obs;
+      blueTowerPlayerName = prefs.getString('blueTowerName')!.obs;
+      yellowTowerPlayerName = prefs.getString('yellowTowerName')!.obs;
+      greenTowerPlayerName = prefs.getString('greenTowerName')!.obs;
+    });
+    super.initState();
+  }
+
   /* *SECTION - Num of Players Selector Rive */
   SMINumber? selectedNumberOfPlayersRiveAnimation;
   void _onNumOfPlayersSelectorRiveInit(Artboard artboard) {
@@ -100,7 +112,7 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                             child: EnterPlayerNameContainer(
                                 towerColor:
                                     const Color.fromRGBO(240, 73, 79, 1),
-                                towerColorName: 'Red',
+                                towerColorName: 'red',
                                 playerName: redTowerPlayerName),
                           ),
                           Visibility(
@@ -108,7 +120,7 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                             child: EnterPlayerNameContainer(
                                 towerColor:
                                     const Color.fromRGBO(76, 179, 212, 1),
-                                towerColorName: 'Blue',
+                                towerColorName: 'blue',
                                 playerName: blueTowerPlayerName),
                           ),
                           Visibility(
@@ -116,14 +128,14 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                             child: EnterPlayerNameContainer(
                                 towerColor:
                                     const Color.fromRGBO(211, 183, 120, 1),
-                                towerColorName: 'Yellow',
+                                towerColorName: 'yellow',
                                 playerName: yellowTowerPlayerName),
                           ),
                           Visibility(
                             visible: selectedNumberOfPlayers.value == 4,
                             child: EnterPlayerNameContainer(
                                 towerColor: const Color.fromRGBO(37, 68, 65, 1),
-                                towerColorName: 'Green',
+                                towerColorName: 'green',
                                 playerName: greenTowerPlayerName),
                           ),
                         ],
@@ -231,8 +243,13 @@ class EnterPlayerNameContainer extends StatelessWidget {
           actions: <Widget>[
             ButtonTile(
                 text: 'ok',
-                onTap: () {
+                onTap: () async {
+                  final SharedPreferences prefs =
+                      await SharedPreferences.getInstance();
+                  prefs.setString(
+                      '${towerColorName}TowerName', textFieldController.text);
                   playerName(textFieldController.text);
+
                   Get.back();
                 })
           ],

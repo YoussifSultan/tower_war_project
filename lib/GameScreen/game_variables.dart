@@ -10,14 +10,14 @@ class GameVariables {
   static List<Player> activePlayers = [
     Player(
         isAlive: true,
-        name: 'yeoo',
+        name: 'Red Tower',
         linePositions: [Point(rowIndex: 0, colIndex: 0)],
         colorData: Colordata.availableColors
             .firstWhere((color) => color.colorCode == 'R'),
         towerPosition: Point(rowIndex: 0, colIndex: 0)),
     Player(
       isAlive: true,
-      name: 'osama',
+      name: 'Blue Tower',
       linePositions: [Point(rowIndex: 0, colIndex: 7)],
       colorData: Colordata.availableColors
           .firstWhere((color) => color.colorCode == 'B'),

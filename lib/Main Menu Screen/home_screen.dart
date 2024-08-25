@@ -1,13 +1,15 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:rive/rive.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:tower_war/Classes/color_data.dart';
 import 'package:tower_war/Classes/player.dart';
 import 'package:tower_war/Classes/point.dart';
 import 'package:tower_war/CommonUsed/button_tile.dart';
 import 'package:tower_war/CommonUsed/constants.dart';
-import 'package:tower_war/CommonUsed/page_options.dart';
+import 'package:tower_war/Main%20Menu%20Screen/page_options.dart';
 import 'package:tower_war/GameScreen/game_variables.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,6 +24,17 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     FlameAudio.bgm.initialize();
     // FlameAudio.bgm.play('backgroundmusicForHomeScreen.mp3', volume: .25);
+    SharedPreferences.getInstance().then((prefs) {
+      if (prefs.getBool('firstOpen') == null) {
+        prefs.setBool('firstOpen', true);
+        prefs.setString('redTowerName', 'Red Tower');
+        prefs.setString('blueTowerName', 'Blue Tower');
+        prefs.setString('yellowTowerName', 'Yellow Tower');
+        prefs.setString('greenTowerName', 'Green Tower');
+        FirebaseAnalytics.instance.logEvent(name: 'firstOpen');
+      }
+    });
+
     super.initState();
   }
 
@@ -59,25 +72,19 @@ class _HomeScreenState extends State<HomeScreen> {
                     },
                   ),
                   ButtonTile(
-                    text: 'Settings',
-                    onTap: () {
-                      Get.toNamed(PageNames.settingsPage);
-                    },
-                  ),
-                  ButtonTile(
                     text: 'Tutorial',
                     onTap: () {
                       GameVariables.activePlayers = [
                         Player(
                             isAlive: true,
-                            name: 'Red Tower',
+                            name: 'Player',
                             linePositions: [Point(rowIndex: 0, colIndex: 0)],
                             colorData: Colordata.availableColors
                                 .firstWhere((color) => color.colorCode == 'R'),
                             towerPosition: Point(rowIndex: 0, colIndex: 0)),
                         Player(
                           isAlive: true,
-                          name: "Blue Tower",
+                          name: "Opponent",
                           linePositions: [Point(rowIndex: 0, colIndex: 7)],
                           colorData: Colordata.availableColors
                               .firstWhere((color) => color.colorCode == 'B'),
@@ -86,6 +93,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       ];
                       Get.toNamed(PageNames.tutorialPage);
                     },
+                  ),
+                  ButtonTile(
+                    text: 'Share',
+                    onTap: () {},
                   ),
                 ],
               ),

@@ -39,14 +39,14 @@ class _GameScreenState extends State<GameScreen> {
     });
     GameVariables.grid = [
       [
-        'TR80'.obs,
+        'TR100'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
-        'TB20'.obs
+        'TB100'.obs
       ],
       ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
       ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
@@ -60,14 +60,14 @@ class _GameScreenState extends State<GameScreen> {
       ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
       ['_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs, '_'.obs],
       [
-        GameVariables.activePlayers.length == 4 ? 'TG16'.obs : '_'.obs,
+        GameVariables.activePlayers.length == 4 ? 'TG100'.obs : '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
         '_'.obs,
-        GameVariables.activePlayers.length >= 3 ? 'TY10'.obs : '_'.obs
+        GameVariables.activePlayers.length >= 3 ? 'TY100'.obs : '_'.obs
       ]
     ];
 

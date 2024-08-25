@@ -224,7 +224,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                   setState(() {});
                   if (shownInstruction
                       .contains(InstructionStages.transferingTroops)) {
-                    DialogTile.showDialogWidget(Get.context ?? context,
+                    DialogTile.showDialogWidget(context,
                         title: 'Tutorial',
                         content: 'Now it\'s blue\'s turn', onEnd: () async {
                       for (var i = 1; i <= 5; i++) {
@@ -239,7 +239,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                     });
                   } else if (shownInstruction.contains(
                       InstructionStages.stackingTroopsForLaterTransfer)) {
-                    DialogTile.showDialogWidget(Get.context ?? context,
+                    DialogTile.showDialogWidget(context,
                         title: 'Tutorial',
                         content: 'Now it\'s blue\'s turn', onEnd: () async {
                       for (var i = 1; i <= 5; i++) {
@@ -268,7 +268,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                     });
                   } else if (shownInstruction
                       .contains(InstructionStages.numberOfTroopsLimit)) {
-                    DialogTile.showDialogWidget(Get.context ?? context,
+                    DialogTile.showDialogWidget(context,
                         title: 'Tutorial',
                         content: 'Now it\'s blue\'s turn', onEnd: () async {
                       for (var i = 0; i < 3; i++) {
