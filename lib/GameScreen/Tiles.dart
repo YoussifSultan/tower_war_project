@@ -1,3 +1,4 @@
+import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rive/rive.dart';
@@ -34,7 +35,7 @@ class CustomTile extends StatelessWidget {
         return TowerTile(
           tileData: tileData,
         );
-      } else if (tileData.tiletypecode == "W") {
+      } else if (tileData.tiletypecode == "S") {
         return TroopsTile(tileData: tileData);
       } else if (tileData.tiletypecode == ".") {
         return DeadTroopsTile(tileData: tileData);
@@ -57,7 +58,7 @@ class TowerTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (!Board.isCellValidToAddWarriors(tileData.tilePosition)) {
+        if (!Board.isCellValidToAddSoldier(tileData.tilePosition)) {
           return;
         }
 
@@ -65,9 +66,10 @@ class TowerTile extends StatelessWidget {
           GameVariables.grid[tileData.tilePosition.rowIndex]
                   [tileData.tilePosition.colIndex](
               '${tileData.tiletypecode + tileData.colordata.colorCode}${(tileData.numberOfTroops - 2)}');
-          GameVariables.turnRemainingTroops(
-              GameVariables.turnRemainingTroops.value - 1);
-          Board.checkIfThePlayerHasEnoughTroopsInTower(tileData.tilePosition);
+          GameVariables.turnRemainingTroops--;
+          FlameAudio.play('SFX/damaging_tower.mp3', volume: .5);
+
+          Board.checkIfThePlayerHasEnoughSoldiersInTower(tileData.tilePosition);
           Board.isTheGameEnded();
           Board.addCurrentGridToHistory();
         }
@@ -139,11 +141,13 @@ class TroopsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: () {
-        if (!Board.isCellValidToAddWarriors(tileData.tilePosition)) {
+        if (!Board.isCellValidToAddSoldier(tileData.tilePosition)) {
           return;
         }
         /* *SECTION - taking all troops from a the tile */
-        if (GameVariables.isCellSelectionModeSelected.value) {
+        if (GameVariables.isCellSelectionModeSelected.value &&
+            tileData.colordata.colorCode ==
+                GameVariables.currentPlayer.colorData.colorCode) {
           GameVariables.turnRemainingTroops(
               GameVariables.turnRemainingTroops.value +
                   (tileData.numberOfTroops - 1));
@@ -151,6 +155,8 @@ class TroopsTile extends StatelessWidget {
                   [tileData.tilePosition.colIndex](
               '${tileData.tiletypecode + tileData.colordata.colorCode}1');
           GameVariables.isCellSelectionModeSelected(false);
+          Board.addCurrentGridToHistory();
+          Board.playPlaceSoldierSoundEffect();
           return;
         }
         /* *!SECTION */
@@ -158,6 +164,7 @@ class TroopsTile extends StatelessWidget {
           GameVariables.grid[tileData.tilePosition.rowIndex]
                   [tileData.tilePosition.colIndex](
               '${tileData.tiletypecode + tileData.colordata.colorCode}${(tileData.numberOfTroops + 1)}');
+          Board.playPlaceSoldierSoundEffect();
         } else {
           GameVariables.grid[tileData.tilePosition.rowIndex]
                   [tileData.tilePosition.colIndex](
@@ -166,8 +173,10 @@ class TroopsTile extends StatelessWidget {
             GameVariables.grid[tileData.tilePosition.rowIndex]
                 [tileData.tilePosition.colIndex]("_");
           }
+          FlameAudio.play('SFX/damaging_soldier.mp3', volume: .5);
         }
         GameVariables.turnRemainingTroops--;
+
         Board.addCurrentGridToHistory();
         Board.updateTeamsLine();
       },
@@ -216,7 +225,7 @@ class DeadTroopsTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
-          if (!Board.isCellValidToAddWarriors(tileData.tilePosition)) {
+          if (!Board.isCellValidToAddSoldier(tileData.tilePosition)) {
             return;
           }
 
@@ -228,6 +237,7 @@ class DeadTroopsTile extends StatelessWidget {
                 [tileData.tilePosition.colIndex]("_");
           }
           GameVariables.turnRemainingTroops--;
+          FlameAudio.play('SFX/damaging_soldier.mp3', volume: .5);
           Board.addCurrentGridToHistory();
           Board.updateTeamsLine();
         },
@@ -271,16 +281,16 @@ class BlankTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
         onTap: () {
-          if (!Board.isCellValidToAddWarriors(tileData.tilePosition)) {
+          if (!Board.isCellValidToAddSoldier(tileData.tilePosition)) {
             return;
           }
           String currentTurnColorCode =
               GameVariables.currentPlayer.colorData.colorCode;
 
           GameVariables.grid[tileData.tilePosition.rowIndex]
-              [tileData.tilePosition.colIndex]('W${currentTurnColorCode}1');
-          GameVariables.turnRemainingTroops(
-              GameVariables.turnRemainingTroops.value - 1);
+              [tileData.tilePosition.colIndex]('S${currentTurnColorCode}1');
+          GameVariables.turnRemainingTroops--;
+          Board.playPlaceSoldierSoundEffect();
 
           Board.addCurrentGridToHistory();
           Board.updateTeamsLine();

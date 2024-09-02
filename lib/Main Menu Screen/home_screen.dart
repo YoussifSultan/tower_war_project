@@ -49,6 +49,44 @@ class _HomeScreenState extends State<HomeScreen> {
     Constants.screenWidth = MediaQuery.of(context).size.width;
     Constants.screenHeight = MediaQuery.of(context).size.height;
     return Scaffold(
+      bottomNavigationBar: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            SizedBox(
+              width: 70,
+              child: IconTile(
+                  onTap: () {
+                    showAboutDialog(
+                      context: context,
+                      applicationIcon: Image.asset(
+                        'assets/images/icon.jpg',
+                        height: 50,
+                        width: 50,
+                      ),
+                      applicationName: 'Tower War',
+                      applicationVersion: '1.0.0',
+                      applicationLegalese:
+                          '© 2024 Developer_Experts. All rights reserved.',
+                    );
+                  },
+                  foregroundIcon: Icons.help_outline),
+            ),
+            SizedBox(
+                width: 70,
+                child: IconTile(
+                    onTap: () {
+                      // open https://play.google.com/store/apps/details?id=com.roblox.client
+                    },
+                    foregroundIcon: Icons.share_sharp)),
+            SizedBox(
+                width: 70,
+                child: IconTile(
+                    onTap: () {}, foregroundIcon: Icons.video_collection))
+          ],
+        ),
+      ),
       backgroundColor: const Color.fromRGBO(76, 179, 212, 1),
       body: Stack(
         children: [
@@ -101,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-          )
+          ),
         ],
       ),
     );

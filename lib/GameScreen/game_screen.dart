@@ -76,14 +76,21 @@ class _GameScreenState extends State<GameScreen> {
       onUpdate: (val) {
         if (isUndoFunctionActivated) {
           Board.convertListStringToListRxString(val);
-          isUndoFunctionActivated = false;
           Board.updateTeamsLine();
-          GameVariables.turnRemainingTroops(
-              GameVariables.turnRemainingTroops.value + 1);
+          GameVariables.historyOfTurnRemainingSoldiers.undo();
+          Board.playPlaceSoldierSoundEffect();
         }
       },
     );
+    GameVariables.historyOfTurnRemainingSoldiers =
+        SimpleStack(GameVariables.turnRemainingTroops.value, onUpdate: (val) {
+      if (isUndoFunctionActivated) {
+        GameVariables.turnRemainingTroops(val);
+        isUndoFunctionActivated = false;
+      }
+    });
     super.initState();
+
     /* *SECTION - fortune wheel */
     WidgetsBinding.instance.addPostFrameCallback(
         (_) => showFortuneWheelToChooseWhichPlayerBeginsFirst());
@@ -166,7 +173,7 @@ class _GameScreenState extends State<GameScreen> {
     }
     GameVariables.currentPlayer =
         GameVariables.activePlayers[GameVariables.currentPlayerIndex.value];
-    Board.checkIfThePlayerHasEnoughTroopsInTower(
+    Board.checkIfThePlayerHasEnoughSoldiersInTower(
         GameVariables.currentPlayer.towerPosition);
   }
 

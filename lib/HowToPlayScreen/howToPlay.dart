@@ -464,7 +464,7 @@ class _TutorialScreenState extends State<TutorialScreen> {
                 tiletypecode: '_',
                 colordata: Colordata.availableColors[0],
                 numberOfTroops: 0);
-            if (!Board.isCellValidToAddWarriors(tileData.tilePosition)) {
+            if (!Board.isCellValidToAddSoldier(tileData.tilePosition)) {
               return;
             }
             String currentTurnColorCode =

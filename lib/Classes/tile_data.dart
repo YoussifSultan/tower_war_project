@@ -14,10 +14,10 @@ class TileData {
       required this.numberOfTroops});
 
   static List<String> availableTileTypes = [
-    'T',
-    'D',
-    'W',
-    '.',
-    '_',
+    'T', // Tower
+    'D', //Broken Tower
+    'S', // Soldiers
+    '.', // Dead Soldiers
+    '_', // blank Tile
   ];
 }

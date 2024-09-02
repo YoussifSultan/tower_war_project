@@ -29,6 +29,7 @@ class GameVariables {
   static Map<int, Player> leaderboard = {};
 
   static late SimpleStack<List<List<String>>> historyController;
+  static late SimpleStack<int> historyOfTurnRemainingSoldiers;
   static RxBool isCellSelectionModeSelected = false.obs;
   static RxInt turnRemainingTroops = 5.obs;
 

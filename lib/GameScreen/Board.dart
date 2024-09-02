@@ -131,7 +131,7 @@ class Board {
       List<RxString> row = GameVariables.grid[indexOfRow];
       for (var indexOfCol = 0; indexOfCol < numOfColumns; indexOfCol++) {
         String cell = row[indexOfCol].string;
-        if (cell.contains('W') && cell.contains(cellType)) {
+        if (cell.contains('S') && cell.contains(cellType)) {
           if (line
               .where((point) =>
                   point.rowIndex == indexOfRow && point.colIndex == indexOfCol)
@@ -199,6 +199,8 @@ class Board {
     List<List<String>> currentStringGrid =
         Board.convertListRxStringToListString(GameVariables.grid);
     GameVariables.historyController.modify(currentStringGrid);
+    GameVariables.historyOfTurnRemainingSoldiers
+        .modify(GameVariables.turnRemainingTroops.value);
   }
 
   static bool isThisPointNearTheLine(Point point, List<Point> pointsOfLine) {
@@ -217,7 +219,7 @@ class Board {
     }
   }
 
-  static bool isCellValidToAddWarriors(Point cellPosition) {
+  static bool isCellValidToAddSoldier(Point cellPosition) {
     /* *SECTION - Check if the cell belongs to a specified line */
     List<Point> pointsOfLine = GameVariables.currentPlayer.linePositions;
     if (!Board.isThisPointNearTheLine(cellPosition, pointsOfLine)) {
@@ -236,7 +238,7 @@ class Board {
       Get.closeAllSnackbars();
       Get.rawSnackbar(
           messageText: const Text(
-        'There is no warriors left',
+        'There is no soldiers left',
         style: TextStyle(color: Colors.white),
       ));
       return false;
@@ -245,7 +247,7 @@ class Board {
     return true;
   }
 
-  static Future<void> checkIfThePlayerHasEnoughTroopsInTower(
+  static Future<void> checkIfThePlayerHasEnoughSoldiersInTower(
       Point towerPosition) async {
     String cellData = GameVariables
         .grid[towerPosition.rowIndex][towerPosition.colIndex].string
@@ -346,7 +348,7 @@ class Board {
     }
     GameVariables.currentPlayer =
         GameVariables.activePlayers[GameVariables.currentPlayerIndex.value];
-    Board.checkIfThePlayerHasEnoughTroopsInTower(
+    Board.checkIfThePlayerHasEnoughSoldiersInTower(
         GameVariables.currentPlayer.towerPosition);
   }
 
@@ -371,10 +373,21 @@ class Board {
       GameVariables.grid[towerPosition.rowIndex]
           [towerPosition.colIndex]('$cellData${(numberOfTroopsInTower - 5)}');
       GameVariables.turnRemainingTroops(5);
+      GameVariables.historyOfTurnRemainingSoldiers.modify(5);
       /* *!SECTION */
       GameVariables.historyController
           .modify(Board.convertListRxStringToListString(GameVariables.grid));
       GameVariables.historyController.clearHistory();
     }
+  }
+
+  static Future<void> playPlaceSoldierSoundEffect() async {
+    int soundEffectIndex = 0;
+    if (GameVariables.turnRemainingTroops.value > 5) {
+      soundEffectIndex = 1;
+    } else {
+      soundEffectIndex = (GameVariables.turnRemainingTroops.value % 5) + 1;
+    }
+    await FlameAudio.play('SFX/add_soldier_$soundEffectIndex.mp3', volume: .5);
   }
 }
