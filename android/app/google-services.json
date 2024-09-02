@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:826150444355:android:2d73d9a915f9496374e3f6",
+        "mobilesdk_app_id": "1:826150444355:android:4ea813707cfcab8c74e3f6",
         "android_client_info": {
-          "package_name": "com.example.tower_war_project"
+          "package_name": "com.developerExperts.towerWar"
         }
       },
       "oauth_client": [],

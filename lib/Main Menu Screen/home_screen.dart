@@ -9,8 +9,12 @@ import 'package:tower_war/Classes/player.dart';
 import 'package:tower_war/Classes/point.dart';
 import 'package:tower_war/CommonUsed/button_tile.dart';
 import 'package:tower_war/CommonUsed/constants.dart';
+import 'package:tower_war/CommonUsed/dialog.dart';
 import 'package:tower_war/Main%20Menu%20Screen/page_options.dart';
 import 'package:tower_war/GameScreen/game_variables.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,14 +28,14 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     FlameAudio.bgm.initialize();
     // FlameAudio.bgm.play('backgroundmusicForHomeScreen.mp3', volume: .25);
-    SharedPreferences.getInstance().then((prefs) {
+    SharedPreferences.getInstance().then((prefs) async {
       if (prefs.getBool('firstOpen') == null) {
         prefs.setBool('firstOpen', true);
         prefs.setString('redTowerName', 'Red Tower');
         prefs.setString('blueTowerName', 'Blue Tower');
         prefs.setString('yellowTowerName', 'Yellow Tower');
         prefs.setString('greenTowerName', 'Green Tower');
-        FirebaseAnalytics.instance.logEvent(name: 'firstOpen');
+        await FirebaseAnalytics.instance.logEvent(name: 'firstOpen');
       }
     });
 
@@ -76,14 +80,10 @@ class _HomeScreenState extends State<HomeScreen> {
             SizedBox(
                 width: 70,
                 child: IconTile(
-                    onTap: () {
-                      // open https://play.google.com/store/apps/details?id=com.roblox.client
+                    onTap: () async {
+                      await shareGameLink(context);
                     },
                     foregroundIcon: Icons.share_sharp)),
-            SizedBox(
-                width: 70,
-                child: IconTile(
-                    onTap: () {}, foregroundIcon: Icons.video_collection))
           ],
         ),
       ),
@@ -112,30 +112,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ButtonTile(
                     text: 'Tutorial',
                     onTap: () {
-                      GameVariables.activePlayers = [
-                        Player(
-                            isAlive: true,
-                            name: 'Player',
-                            linePositions: [Point(rowIndex: 0, colIndex: 0)],
-                            colorData: Colordata.availableColors
-                                .firstWhere((color) => color.colorCode == 'R'),
-                            towerPosition: Point(rowIndex: 0, colIndex: 0)),
-                        Player(
-                          isAlive: true,
-                          name: "Opponent",
-                          linePositions: [Point(rowIndex: 0, colIndex: 7)],
-                          colorData: Colordata.availableColors
-                              .firstWhere((color) => color.colorCode == 'B'),
-                          towerPosition: Point(rowIndex: 0, colIndex: 7),
-                        ),
-                      ];
-                      Get.toNamed(PageNames.tutorialPage);
+                      launchUrlString(
+                          'https://www.youtube.com/watch?v=g0GNuoCOtaQ');
                     },
                   ),
                   ButtonTile(
-                    text: 'Share',
-                    onTap: () {},
-                  ),
+                      text: 'Share',
+                      onTap: () async {
+                        await shareGameLink(context);
+                      }),
                 ],
               ),
             ),
@@ -143,5 +128,25 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> shareGameLink(BuildContext context) async {
+    final result = await Share.share('''
+Check Out Tower War Game 
+✨ Why You'll Love It:
+Strategic Fun: Use your skills to outsmart your opponents. 🧠
+Family-Friendly: Great for up to four players, perfect for game nights. 🕹️
+New and Exciting: A fresh board game idea that's fun and different! 🚀
+
+https://play.google.com/store/apps/details?id=com.developerExperts.towerWar
+''');
+
+    if (result.status == ShareResultStatus.success) {
+      DialogTile.showDialogWidget(context,
+          title: 'Thanks',
+          content:
+              'Thank you for sharing the joy and excitement of Tower War!');
+      await FirebaseAnalytics.instance.logEvent(name: 'shareEvent');
+    }
   }
 }

@@ -28,7 +28,7 @@ if (flutterVersionName == null) {
 }
 
 android {
-    namespace "com.example.tower_war_project"
+    namespace "com.developerExperts.towerWar"
     compileSdkVersion flutter.compileSdkVersion
     ndkVersion "25.1.8937393"
 
@@ -47,7 +47,7 @@ android {
 
     defaultConfig {
         // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId "com.example.tower_war_project"
+        applicationId "com.developerExperts.towerWar"
         // You can update the following values to match your application needs.
         // For more information, see: https://docs.flutter.dev/deployment/android#reviewing-the-gradle-build-configuration.
         minSdkVersion flutter.minSdkVersion
