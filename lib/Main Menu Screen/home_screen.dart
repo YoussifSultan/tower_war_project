@@ -30,16 +30,34 @@ class _HomeScreenState extends State<HomeScreen> {
     // FlameAudio.bgm.play('backgroundmusicForHomeScreen.mp3', volume: .25);
     SharedPreferences.getInstance().then((prefs) async {
       if (prefs.getBool('firstOpen') == null) {
-        prefs.setBool('firstOpen', true);
         prefs.setString('redTowerName', 'Red Tower');
         prefs.setString('blueTowerName', 'Blue Tower');
         prefs.setString('yellowTowerName', 'Yellow Tower');
         prefs.setString('greenTowerName', 'Green Tower');
-        await FirebaseAnalytics.instance.logEvent(name: 'firstOpen');
+        showPrivacyPolicyDialog(prefs);
       }
     });
 
     super.initState();
+  }
+
+  void showPrivacyPolicyDialog(SharedPreferences prefs) {
+    DialogTile.showDialogWidget(context,
+        title: 'Privacy Policy',
+        content: 'Please Read the Privacy Policy On the web Page',
+        buttonText: 'Read', onTap: () async {
+      launchUrlString('https://youssifsultan.github.io/').then((val) async {
+        DialogTile.showDialogWidget(context,
+            title: 'Privacy Policy',
+            content:
+                'By clicking this button, you confirm that you have read and accepted the privacy policy',
+            buttonText: 'Accept', onTap: () async {
+          await FirebaseAnalytics.instance.logEvent(name: 'firstOpen');
+          prefs.setBool('firstOpen', true);
+          Get.back();
+        });
+      });
+    });
   }
 
   @override
