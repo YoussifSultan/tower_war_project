@@ -91,16 +91,16 @@ class _IconTileState extends State<IconTile> {
                     ],
               borderRadius: BorderRadius.circular(50),
               color: isClicking.value
-                  ? const Color.fromRGBO(173, 155, 170, 1)
-                  : Colors.white,
+                  ? const Color.fromRGBO(240, 73, 79, 1)
+                  : const Color.fromRGBO(37, 68, 65, 1),
             ),
             child: Center(
               child: Icon(
                 widget.foregroundIcon,
                 size: 40,
                 color: isClicking.value
-                    ? Colors.white
-                    : const Color.fromRGBO(173, 155, 170, 1),
+                    ? const Color.fromRGBO(37, 68, 65, 1)
+                    : const Color.fromRGBO(240, 73, 79, 1),
               ),
             )),
       ),

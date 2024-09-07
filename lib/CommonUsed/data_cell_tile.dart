@@ -19,7 +19,8 @@ class DataCardTile extends StatelessWidget {
       width: width,
       height: 100,
       decoration: BoxDecoration(
-          color: Colors.white, borderRadius: BorderRadius.circular(20)),
+          color: const Color.fromRGBO(37, 68, 65, 1),
+          borderRadius: BorderRadius.circular(20)),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         crossAxisAlignment: CrossAxisAlignment.center,
@@ -27,7 +28,9 @@ class DataCardTile extends StatelessWidget {
           Text(
             dataText.value,
             style: const TextStyle(
-                fontFamily: 'PixelText', fontSize: 20, color: Colors.black),
+                fontFamily: 'PixelText',
+                fontSize: 20,
+                color: Color.fromRGBO(240, 73, 79, 1)),
           ),
           Text(
             hintingText,

@@ -153,7 +153,7 @@ class _GameScreenState extends State<GameScreen> {
                     style: TextStyle(color: Colors.white),
                   ));
                 },
-                foregroundIcon: Icons.pivot_table_chart_outlined),
+                foregroundIcon: Icons.transfer_within_a_station_sharp),
             /* *!SECTION */
           ],
         ),

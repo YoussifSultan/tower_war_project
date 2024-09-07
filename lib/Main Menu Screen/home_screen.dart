@@ -4,16 +4,11 @@ import 'package:flutter/material.dart';
 import 'package:get/route_manager.dart';
 import 'package:rive/rive.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:tower_war/Classes/color_data.dart';
-import 'package:tower_war/Classes/player.dart';
-import 'package:tower_war/Classes/point.dart';
 import 'package:tower_war/CommonUsed/button_tile.dart';
 import 'package:tower_war/CommonUsed/constants.dart';
 import 'package:tower_war/CommonUsed/dialog.dart';
 import 'package:tower_war/Main%20Menu%20Screen/page_options.dart';
-import 'package:tower_war/GameScreen/game_variables.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -127,12 +122,36 @@ class _HomeScreenState extends State<HomeScreen> {
                       Get.toNamed(PageNames.gameOptionsDialog);
                     },
                   ),
-                  ButtonTile(
-                    text: 'Tutorial',
-                    onTap: () {
-                      launchUrlString(
-                          'https://www.youtube.com/watch?v=g0GNuoCOtaQ');
+                  GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTapDown: (details) {
+                      final offset = details.globalPosition;
+                      showTutorialMenu(context, offset);
                     },
+                    child: Container(
+                      width: 200,
+                      height: 50,
+                      margin: const EdgeInsets.only(bottom: 20),
+                      decoration: BoxDecoration(
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 10,
+                            offset: Offset(7, 7),
+                          )
+                        ],
+                        borderRadius: BorderRadius.circular(20),
+                        color: const Color.fromRGBO(37, 68, 65, 1),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Tutorial',
+                          style: TextStyle(
+                              fontFamily: 'PixelText',
+                              fontSize: 20,
+                              color: Color.fromRGBO(240, 73, 79, 1)),
+                        ),
+                      ),
+                    ),
                   ),
                   ButtonTile(
                       text: 'Share',
@@ -146,6 +165,40 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
+  }
+
+  Future<dynamic> showTutorialMenu(BuildContext context, Offset offset) {
+    return showMenu(
+        context: context,
+        position: RelativeRect.fromLTRB(
+          offset.dx,
+          offset.dy,
+          MediaQuery.of(context).size.width - offset.dx,
+          MediaQuery.of(context).size.height - offset.dy,
+        ),
+        items: [
+          PopupMenuItem(
+              child: ButtonTile(
+                  text: 'Arabic',
+                  onTap: () async {
+                    launchUrlString(
+                      'https://youtu.be/kTnX7KWRinA',
+                    ).then((val) async {
+                      await FirebaseAnalytics.instance
+                          .logEvent(name: 'Arabic_Tutorial_Watched');
+                    });
+                  })),
+          PopupMenuItem(
+              child: ButtonTile(
+                  text: 'English',
+                  onTap: () async {
+                    launchUrlString('https://youtu.be/-AXcXs0D8nI')
+                        .then((val) async {
+                      await FirebaseAnalytics.instance
+                          .logEvent(name: 'English_Tutorial_Watched');
+                    });
+                  }))
+        ]);
   }
 
   Future<void> shareGameLink(BuildContext context) async {

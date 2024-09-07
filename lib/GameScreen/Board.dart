@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flame_audio/flame_audio.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -331,6 +332,7 @@ class Board {
           );
         });
       }
+      await FirebaseAnalytics.instance.logEvent(name: 'Games_Ended');
       Get.offAllNamed(PageNames.homePage);
       return true;
     }

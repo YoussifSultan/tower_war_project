@@ -1,3 +1,4 @@
+import 'package:firebase_analytics/firebase_analytics.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:rive/rive.dart';
@@ -154,7 +155,7 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                       padding: const EdgeInsets.only(left: 10, right: 30),
                       child: ButtonTile(
                           text: 'Start Game',
-                          onTap: () {
+                          onTap: () async {
                             GameVariables.activePlayers = [
                               Player(
                                   isAlive: true,
@@ -204,6 +205,9 @@ class _GameOptionsDialogState extends State<GameOptionsDialog> {
                                   towerPosition:
                                       Point(rowIndex: 12, colIndex: 0)));
                             }
+                            await FirebaseAnalytics.instance
+                                .logEvent(name: 'Games_Started');
+
                             Get.offAndToNamed(PageNames.gamePage);
                           })),
                 ),
